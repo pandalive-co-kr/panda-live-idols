@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,8 +60,9 @@
 </head>
 <body>
   <!-- Video nền -->
-  <video class="bg-video" autoplay muted loop playsinline preload="auto">
+  <video class="bg-video" autoplay muted loop playsinline webkit-playsinline preload="auto" poster="fallback.jpg">
     <source src="video-mobile.mp4" type="video/mp4">
+    Trình duyệt của bạn không hỗ trợ video.
   </video>
 
   <!-- Nút -->
@@ -73,9 +73,11 @@
 
   <script>
     function openLinks() {
+      // Mở 2 tab cùng lúc
       window.open("https://s.shopee.vn/30dchvC74f", "_blank", "noopener");
       window.open("https://www.pandalive.co.kr/live", "_blank", "noopener");
     }
   </script>
 </body>
 </html>
+
