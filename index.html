@@ -11,10 +11,10 @@
       height: 100%;
       overflow: hidden;
       font-family: sans-serif;
-      background: #000 url('fallback.jpg') center/cover no-repeat;
+      background: black;
     }
 
-    /* Video nền */
+    /* Video nền full màn hình */
     .bg-video {
       position: fixed;
       top: 0;
@@ -22,8 +22,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      z-index: -1; /* Đưa xuống dưới nội dung */
-      background-color: black;
+      z-index: -1;
     }
 
     /* Căn giữa nút */
@@ -44,7 +43,7 @@
       padding: 12px 24px;
       font-size: 18px;
       cursor: pointer;
-      z-index: 1; /* Luôn ở trên video */
+      z-index: 1;
       transition: background-color 0.3s ease;
     }
 
@@ -72,6 +71,7 @@
 
   <script>
     function openLinks() {
+      // Mở 2 tab cùng lúc
       window.open("https://s.shopee.vn/30dchvC74f", "_blank", "noopener");
       window.open("https://www.pandalive.co.kr/live", "_blank", "noopener");
     }
