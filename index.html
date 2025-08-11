@@ -70,7 +70,7 @@
 <!-- Ảnh fallback -->
 <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg" alt="Panda Live Idols" class="fallback" loading="eager">
 
-<!-- Video sẽ được chèn bằng JS để preload trước -->
+<!-- Vùng chứa video -->
 <div id="video-container"></div>
 
 <!-- Logo góc trên bên phải -->
@@ -83,30 +83,40 @@
 <a href="https://pandalive.co.kr" class="btn-link">Panda Live Idols</a>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const container = document.getElementById('video-container');
+    const videoURL = "https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4";
+    const posterURL = "https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg";
 
-    // Tạo video ẩn để preload
-    const tempVideo = document.createElement('video');
-    tempVideo.src = "https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4";
-    tempVideo.muted = true;
-    tempVideo.playsInline = true;
-    tempVideo.preload = "auto";
+    try {
+        // 1. Preload video bằng fetch
+        const response = await fetch(videoURL);
+        const videoData = await response.blob();
 
-    tempVideo.addEventListener('canplaythrough', () => {
-        // Khi preload xong, thay thế vào DOM và play ngay
-        tempVideo.autoplay = true;
-        tempVideo.loop = true;
-        tempVideo.poster = "https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg";
-        container.innerHTML = "";
-        container.appendChild(tempVideo);
-        tempVideo.play().catch(() => {
-            document.body.addEventListener('touchstart', () => tempVideo.play(), { once: true });
+        // 2. Tạo URL tạm từ Blob
+        const blobURL = URL.createObjectURL(videoData);
+
+        // 3. Tạo thẻ video và gán Blob URL
+        const video = document.createElement('video');
+        video.src = blobURL;
+        video.muted = true;
+        video.playsInline = true;
+        video.autoplay = true;
+        video.loop = true;
+        video.poster = posterURL;
+
+        // 4. Chèn video vào DOM
+        container.appendChild(video);
+
+        // 5. Play ngay khi sẵn sàng
+        video.play().catch(() => {
+            // Nếu Safari chặn autoplay
+            document.body.addEventListener('touchstart', () => video.play(), { once: true });
         });
-    });
 
-    // Bắt đầu load video ngay
-    tempVideo.load();
+    } catch (err) {
+        console.error("Lỗi preload video:", err);
+    }
 });
 </script>
 
