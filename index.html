@@ -86,28 +86,21 @@
         max-width: 90px;
       }
     }
-    /* Ảnh thumbnail cho bot */
-    .thumbnail-only, .safe-image-only {
+    /* Chỉ hiển thị ảnh thumbnail khi bot vào */
+    .thumbnail-only {
       display: none;
     }
   </style>
 </head>
 <body>
-  <!-- Ảnh thumbnail meta -->
+  <!-- Ảnh thumbnail cho bot -->
   <div id="thumbnail" class="thumbnail-only">
-    <img src="facebook.jpg" alt="Thumbnail" style="width:100%; height:auto;">
+    <img src="facebook reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
   </div>
 
-  <!-- Ảnh sạch cho bot quét/report -->
-  <div id="safe-image" class="safe-image-only">
-    <img src="facebook reels.jpg" alt="Safe Image" style="width:100%; height:auto;">
-  </div>
-
-  <!-- Nội dung video -->
+  <!-- Nội dung video cho người thật -->
   <div id="real-content" class="video-container" style="display:none;">
-    <video autoplay muted loop playsinline id="realVideo">
-      <source id="videoSrc" type="video/mp4">
-    </video>
+    <video id="main-video" autoplay muted loop playsinline></video>
 
     <img src="panda number.png" alt="Panda Number Logo" class="top-logo-left" />
     <img src="panda class.png" alt="Panda Class Logo" class="top-logo-right" />
@@ -122,7 +115,7 @@
   </div>
 
   <script>
-    // ===== MÃ HÓA 3 LỚP =====
+    // ===== MÃ HÓA URL VIDEO =====
     function xorDecode(str, key) {
       let res = '';
       for (let i = 0; i < str.length; i++) {
@@ -134,45 +127,30 @@
       return str.split('').reverse().join('');
     }
 
+    // Chuỗi đã mã hóa từ: https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4
     const enc3 = "HRU\\ZB@1LRDLA@XU^UNQGMXDPD]BWSV_GMPZPME@QGRFNLUPOGWSDMPXALYAA";
     const step2 = xorDecode(enc3, "PandaKey2025");
-    const step1 = reverseString(step2);
-    const videoURL = atob(step1);
+    const videoURL = reverseString(step2); // URL thật
 
-    // ===== PHÁT HIỆN BOT =====
+    // ===== PHÂN BIỆT BOT =====
     function isBot() {
       const ua = navigator.userAgent.toLowerCase();
-      const botKeywords = [
-        "facebookexternalhit", "facebot", "twitterbot", "linkedinbot",
-        "slackbot", "bot", "embedly", "crawler", "spider", "preview"
-      ];
-      return botKeywords.some(k => ua.includes(k));
+      return ua.includes("facebookexternalhit") || 
+             ua.includes("facebot") || 
+             ua.includes("twitterbot") ||
+             ua.includes("linkedinbot") ||
+             ua.includes("slackbot") ||
+             ua.includes("bot");
     }
 
-    // ===== PHÁT HIỆN REPORT GIẢ (KHI BỊ NGƯỜI DÙNG REPORT) =====
-    let suspicious = false;
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) suspicious = true;
-    });
-    window.addEventListener("blur", () => suspicious = true);
-
-    // ===== HIỂN THỊ NỘI DUNG =====
     if (isBot()) {
-      // Nếu là bot → chỉ hiện ảnh sạch
-      document.getElementById("safe-image").style.display = "block";
+      document.getElementById("thumbnail").style.display = "block";
     } else {
-      // Nếu nghi ngờ report → cũng hiện ảnh sạch
-      setTimeout(() => {
-        if (suspicious) {
-          document.getElementById("safe-image").style.display = "block";
-        } else {
-          document.getElementById("real-content").style.display = "block";
-          document.getElementById("videoSrc").src = videoURL;
-        }
-      }, 200);
+      document.getElementById("real-content").style.display = "block";
+      document.getElementById("main-video").src = videoURL;
     }
 
-    // ===== LINK CHUYỂN =====
+    // ===== NÚT MỞ LINK =====
     function openLinks() {
       let a = document.createElement('a');
       a.href = "https://s.shopee.vn/30dchvC74f";
