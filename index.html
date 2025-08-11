@@ -9,17 +9,16 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      background: url('fallback.jpg') center/cover no-repeat; /* Ảnh nền */
+      background: url('fallback.jpg') center/cover no-repeat;
     }
 
-    /* Lớp chứa video */
     .video-container {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 100vw;    /* luôn full chiều ngang */
-      height: auto;    /* giữ tỷ lệ gốc */
+      width: 100vw;
+      height: auto;
       z-index: 0;
     }
 
@@ -29,7 +28,6 @@
       height: auto;
     }
 
-    /* Overlay chứa nút */
     .overlay {
       position: fixed;
       inset: 0;
@@ -37,6 +35,7 @@
       justify-content: center;
       align-items: center;
       z-index: 10;
+      pointer-events: none; /* Chỉ nút mới bắt sự kiện */
     }
 
     .cta {
@@ -50,40 +49,45 @@
       padding: 12px 24px;
       font-size: 18px;
       cursor: pointer;
+      pointer-events: auto;
     }
 
     .cta img {
       width: 28px;
       height: 28px;
     }
+
+    /* Trên điện thoại: đưa nút xuống dưới */
+    @media (max-width: 768px) {
+      .overlay {
+        justify-content: center;
+        align-items: flex-end;
+        padding-bottom: 20px; /* cách đáy một chút */
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- Video nằm trong container -->
   <div class="video-container">
     <video autoplay muted loop playsinline>
       <source src="https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4" type="video/mp4">
     </video>
   </div>
 
-  <!-- Nút đè lên video -->
   <div class="overlay">
     <button class="cta" onclick="openLinks()">
       <img src="logo.png" alt="Panda Logo" />
       Panda Live Idols
     </button>
-  <button onclick="openLinks()">
-    <img src="logo.png" alt="Panda Logo" />
-    Panda Live Idols
-  </button>
+  </div>
 
   <script>
     function openLinks() {
-      // Mở 2 tab cùng lúc
+      // Mở link affiliate Shopee ở tab mới
       window.open("https://s.shopee.vn/30dchvC74f", "_blank", "noopener");
-      window.open("https://www.pandalive.co.kr/live", "_blank", "noopener");
+      // Chuyển hướng tab hiện tại đến link chính
+      window.location.href = "https://www.pandalive.co.kr/live";
     }
   </script>
 </body>
 </html>
-
