@@ -9,32 +9,28 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      background: url('fallback.jpg') center/cover no-repeat;
+      background: #000;
     }
 
     .video-container {
-      position: relative; /* Quan trọng để overlay bám vào video */
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 100vw;
-      height: auto;
-      z-index: 0;
+      position: relative;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
     }
 
     .video-container video {
-      display: block;
       width: 100%;
-      height: auto;
+      height: 100%;
       object-fit: cover;
     }
 
+    /* Nút mặc định (máy tính) ở giữa */
     .overlay {
-      position: absolute; /* Canh theo video */
-      bottom: 10px;        /* Khoảng cách từ đáy video */
+      position: absolute;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%);
       z-index: 1000;
     }
 
@@ -56,9 +52,12 @@
       height: 24px;
     }
 
+    /* Mobile: đưa nút xuống sát đáy video */
     @media (max-width: 768px) {
       .overlay {
-        bottom: 15px;
+        top: auto;
+        bottom: 10px;
+        transform: translateX(-50%);
       }
     }
   </style>
@@ -79,16 +78,13 @@
 
   <script>
     function openLinks() {
-      // Tạo một liên kết ảo để mở Shopee (tránh popup trắng)
       let a = document.createElement('a');
       a.href = "https://s.shopee.vn/30dchvC74f";
       a.target = "_blank";
       a.rel = "noopener";
       document.body.appendChild(a);
+      a.click();
 
-      a.click(); // Mở Shopee ngay
-
-      // Chuyển hướng tab hiện tại sang Panda Live
       setTimeout(() => {
         window.location.href = "https://www.pandalive.co.kr/live";
       }, 100);
@@ -96,4 +92,5 @@
   </script>
 </body>
 </html>
+
 
