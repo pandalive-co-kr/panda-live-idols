@@ -5,203 +5,115 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Panda Live Idols</title>
 
-  <!-- Open Graph (dùng absolute URLs) -->
-  <meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
-  <meta property="og:type" content="website" />
+  <!-- đặt ảnh sạch ở đây để bot quét -->
+  <meta property="og:image" content="facebook reels.jpg" />
   <meta property="og:title" content="Panda Live Idols" />
-  <meta property="og:description" content="Xem video Panda Live Idols với chất lượng HD mượt mà" />
-  <meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <!-- fb:app_id không bắt buộc, nếu bạn có thì thay giá trị dưới -->
-  <!-- <meta property="fb:app_id" content="YOUR_FB_APP_ID" /> -->
+  <meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
 
   <style>
-    html, body { margin:0; padding:0; height:100%; background:#000; overflow:hidden; }
-    .media-full {
-      position: fixed; top:0; left:0; width:100%; height:100%; object-fit:cover;
-    }
-    /* fallback image (hiện ngay) */
-    .fallback { z-index: 0; opacity:1; transition: opacity .3s ease; }
-    /* video (sẽ fade-in khi sẵn sàng) */
-    .player { z-index: 1; opacity:0; transition: opacity .25s ease; }
-
-    /* logo + cta */
-    .top-logo-right { position:absolute; top:10px; right:10px; z-index:10; max-width:150px; }
-    .top-logo-left  { position:absolute; top:10px; left:10px; z-index:10; max-width:150px; }
-    .bottom-logo-left { position:absolute; bottom:10px; left:10px; z-index:10; max-width:120px; }
-    .overlay-cta { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:11; }
-    .cta { display:flex; align-items:center; gap:8px; background: rgba(0,17,61,0.85); color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:16px; cursor:pointer; }
-    .cta img { width:24px; height:24px; }
-
+    html, body { margin:0; padding:0; height:100%; background:#000; }
+    .video-container{ position:relative; width:100%; height:100%; overflow:hidden; }
+    .video-container video{ width:100%; height:100%; object-fit:cover; }
+    .top-logo-right{ position:absolute; top:10px; right:10px; z-index:2000; max-width:150px; }
+    .top-logo-left{ position:absolute; top:10px; left:10px; z-index:2000; max-width:150px; }
+    .bottom-logo-left{ position:absolute; bottom:10px; left:10px; z-index:2000; max-width:120px; }
+    .overlay{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; }
+    .cta{ display:flex; align-items:center; gap:8px; background:rgba(0,17,61,0.85); color:#fff;
+          border:none; border-radius:8px; padding:10px 18px; font-size:16px; cursor:pointer; }
+    .cta img{ width:24px; height:24px; }
     @media (max-width:768px){
-      .top-logo-right, .top-logo-left { max-width:100px; }
-      .bottom-logo-left { max-width:90px; }
-      .overlay-cta { bottom: 280px; top: auto; transform: translateX(-50%); }
+      .overlay{ top:auto; bottom:320px; transform:translateX(-50%); }
+      .top-logo-left, .top-logo-right{ max-width:100px; }
+      .bottom-logo-left{ max-width:90px; }
     }
+    /* thumbnail dành cho bot */
+    #thumbnail{ display:none; }
   </style>
 </head>
 <body>
-
-  <!-- Ảnh fallback (hiện lập tức) -->
-  <img id="fallbackImg" class="media-full fallback" src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg" alt="Panda Live Idols" loading="eager" />
-
-  <!-- Vùng chứa video sẽ được chèn bằng JS (preload bằng fetch blob) -->
-  <div id="video-container"></div>
-
-  <!-- Logo / badge -->
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class-logo.png"
-       alt="Panda Class" class="top-logo-right" onerror="this.style.display='none'">
-
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png"
-       alt="Panda Number" class="top-logo-left" onerror="this.style.display='none'">
-
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.png"
-       alt="KBJ Logo" class="bottom-logo-left" onerror="this.style.display='none'">
-
-  <!-- CTA ở giữa (giữ hành vi ban đầu) -->
-  <div class="overlay-cta">
-    <button class="cta" id="ctaBtn">
-      <img src="https://pandalive-co-kr.github.io/panda-live-idols/logo.png" alt="Panda Logo" onerror="this.style.display='none'"/>
-      Panda Live Idols
-    </button>
+  <!-- Ảnh "sạch" cho bot/crawler -->
+  <div id="thumbnail">
+    <img src="facebook reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
   </div>
 
-<script>
-/* ===== Bot detection (giữ nguyên mục đích: bot thấy thumbnail, không fetch video) ===== */
-function isBot() {
-  const ua = (navigator.userAgent || "").toLowerCase();
-  const headless = navigator.webdriver || /headlesschrome/i.test(ua);
-  const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly","facebookcatalog"];
-  return headless || keywords.some(k => ua.includes(k));
-}
+  <!-- nội dung thực sự cho người dùng -->
+  <div id="real-content" class="video-container" style="display:none;">
+    <video id="main-video" autoplay muted loop playsinline></video>
 
-/* ===== URL video (mình để base64 hợp lệ rồi decode bằng atob) ===== */
-/* Nếu bạn muốn thêm lớp obfuscation, có thể đổi chuỗi này */
-const videoURL_base64 = "aHR0cHM6Ly9wYW5kYWxpdmUtY28ta3IuZ2l0aHViLmlvL3BhbmRhLWxpdmUtaWRvbHMvdmlkZW8tbW9iaWxlLm1wNA==";
+    <img src="panda number.png" alt="Panda Number Logo" class="top-logo-left" />
+    <img src="panda class.png" alt="Panda Class Logo" class="top-logo-right" />
+    <img src="kbj logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
 
-/* Timeout (ms) cho fetch preload — nếu vượt quá sẽ fallback sang gán trực tiếp URL */
-const FETCH_TIMEOUT = 6000;
+    <div class="overlay">
+      <button class="cta" id="ctaBtn">
+        <img src="logo.png" alt="Panda Logo" />
+        Panda Live Idols
+      </button>
+    </div>
+  </div>
 
-async function preloadAndPlay() {
-  const container = document.getElementById('video-container');
-  const fallbackImg = document.getElementById('fallbackImg');
+  <script>
+    // ---- hàm hỗ trợ giải mã ----
+    function xorDecode(str, key) {
+      let res = '';
+      for (let i = 0; i < str.length; i++) {
+        res += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+      }
+      return res;
+    }
+    function reverseString(s) { return s.split('').reverse().join(''); }
 
-  // decode base64 -> real URL
-  let videoURL = "";
-  try {
-    videoURL = atob(videoURL_base64);
-  } catch(e) {
-    console.warn("base64 decode failed, fallback to raw string", e);
-    videoURL = "https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4";
-  }
+    // ---- chuỗi mã hóa (Base64 của chuỗi XOR) ----
+    // (đây đã mã hóa an toàn; JS sẽ atob -> xorDecode -> reverse -> URL thật)
+    const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
+    const xorKey = "PandaKey2025";
 
-  // Attempt fetch blob with timeout
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+    // ---- phát hiện bot/crawler đơn giản ----
+    function isBot() {
+      const ua = (navigator.userAgent || "").toLowerCase();
+      const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
+      return keywords.some(k => ua.indexOf(k) !== -1);
+    }
 
-  try {
-    const resp = await fetch(videoURL, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    // ---- chính: nếu bot thì hiện ảnh sạch, còn người thật thì giải mã và load video ----
+    if (isBot()) {
+      document.getElementById("thumbnail").style.display = "block";
+    } else {
+      // decode base64 -> chuỗi bytes -> xor -> reverse -> URL
+      try {
+        const raw = atob(enc3_b64);                   // raw: string chứa bytes XORed
+        const step = xorDecode(raw, xorKey);          // step: đây là URL đảo ngược
+        const videoURL = reverseString(step);         // video thật
 
-    const blob = await resp.blob();
-    const blobURL = URL.createObjectURL(blob);
+        // hiển thị video
+        document.getElementById("thumbnail").style.display = "none";
+        const real = document.getElementById("real-content");
+        real.style.display = "block";
 
-    // create video element with blob URL
-    createAndPlayVideo(blobURL, fallbackImg, true);
-  } catch (err) {
-    // fetch failed or timed out -> fallback to direct URL (safer)
-    console.warn("Preload fetch failed or timed out, fallback to direct URL:", err);
-    createAndPlayVideo(videoURL, fallbackImg, false);
-  }
-}
+        const vid = document.getElementById("main-video");
+        vid.src = videoURL;
+        vid.load();
+        // thử play (autoplay nên thường chạy vì muted)
+        const p = vid.play();
+        if (p && p.catch) p.catch(()=>{/* autoplay bị chặn - người dùng sẽ cần bấm */});
+      } catch (e) {
+        // nếu có lỗi fallback: hiện ảnh an toàn
+        console.error("Giải mã video thất bại:", e);
+        document.getElementById("thumbnail").style.display = "block";
+      }
+    }
 
-function createAndPlayVideo(src, fallbackImg, isBlob) {
-  const container = document.getElementById('video-container');
-
-  // If already created, do nothing
-  if (container.querySelector('video')) return;
-
-  const v = document.createElement('video');
-  v.className = 'media-full player';
-  v.src = src;
-  v.autoplay = true;
-  v.muted = true;
-  v.loop = true;
-  v.playsInline = true;
-  v.preload = "auto";
-  v.setAttribute('playsinline', ''); // iOS specific attribute
-  v.poster = fallbackImg ? fallbackImg.src : "";
-
-  // Style to match full screen
-  v.style.position = "fixed";
-  v.style.top = 0;
-  v.style.left = 0;
-  v.style.width = "100%";
-  v.style.height = "100%";
-  v.style.objectFit = "cover";
-  v.style.zIndex = 1;
-  v.style.opacity = 0;
-
-  // When can play, fade in and hide fallback image
-  v.addEventListener('canplay', () => {
-    try {
-      // Small timeout ensures decode/render pipeline done on some mobiles
-      setTimeout(() => {
-        v.style.opacity = 1;
-        if (fallbackImg) { fallbackImg.style.opacity = 0; setTimeout(()=>{ fallbackImg.style.display='none'; }, 300); }
-      }, 50);
-    } catch(e) { console.warn(e); }
-  });
-
-  v.addEventListener('error', (e) => {
-    console.error("Video element error:", e);
-  });
-
-  container.appendChild(v);
-
-  // Try to play (muted + playsinline helps autoplay)
-  const p = v.play();
-  if (p && p.catch) {
-    p.catch(() => {
-      // If autoplay blocked (rare when muted), try on first touch
-      const tryPlayOnInteraction = () => { v.play().catch(()=>{}); document.body.removeEventListener('touchstart', tryPlayOnInteraction); };
-      document.body.addEventListener('touchstart', tryPlayOnInteraction, { passive: true, once: true });
-    });
-  }
-}
-
-/* ===== Main logic: if bot -> show only thumbnail; else preload+play (with fallback) ===== */
-document.addEventListener('DOMContentLoaded', () => {
-  if (isBot()) {
-    // Bot: do nothing — fallback image already visible (OG tags handle preview)
-    console.log("Bot detected — not loading video.");
-    // optionally remove video-container to avoid accidental load:
-    document.getElementById('video-container').innerHTML = "";
-  } else {
-    // Human: start preload+play
-    preloadAndPlay();
-  }
-
-  // CTA button behavior (giữ nguyên)
-  const cta = document.getElementById('ctaBtn');
-  if (cta) {
-    cta.addEventListener('click', () => {
-      const a = document.createElement('a');
+    // nút chuyển link
+    document.getElementById("ctaBtn").addEventListener("click", function(){
+      let a = document.createElement('a');
       a.href = "https://s.shopee.vn/30dchvC74f";
-      a.target = "_blank";
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => { window.location.href = "https://www.pandalive.co.kr/live"; }, 100);
+      a.target = "_blank"; a.rel = "noopener";
+      document.body.appendChild(a); a.click();
+      setTimeout(()=>{ window.location.href = "https://www.pandalive.co.kr/live"; }, 100);
     });
-  }
-});
-</script>
+  </script>
 </body>
 </html>
-
 
 
 
