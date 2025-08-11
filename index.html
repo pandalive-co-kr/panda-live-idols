@@ -25,6 +25,16 @@
       object-fit: cover;
     }
 
+    /* Logo góc trên bên phải */
+    .top-logo {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 2000;
+      max-width: 150px;
+      height: auto;
+    }
+
     /* Nút mặc định (máy tính) ở giữa */
     .overlay {
       position: absolute;
@@ -64,10 +74,15 @@
 </head>
 <body>
   <div class="video-container">
+    <!-- Video -->
     <video autoplay muted loop playsinline>
       <source src="https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4" type="video/mp4">
     </video>
 
+    <!-- Logo góc trên bên phải -->
+    <img src="panda class.png" alt="Panda Class Logo" class="top-logo" />
+
+    <!-- Nút -->
     <div class="overlay">
       <button class="cta" onclick="openLinks()">
         <img src="logo.png" alt="Panda Logo" />
@@ -92,5 +107,6 @@
   </script>
 </body>
 </html>
+
 
 
