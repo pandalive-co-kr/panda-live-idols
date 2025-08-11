@@ -1,117 +1,109 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Panda Live Idols</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panda Live Idols</title>
 
-  <!-- đặt ảnh sạch ở đây để bot quét -->
-  <meta property="og:image" content="facebook reels.jpg" />
-  <meta property="og:title" content="Panda Live Idols" />
-  <meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
+<!-- Open Graph -->
+<meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Panda Live Idols" />
+<meta property="og:description" content="Xem video Panda Live Idols với chất lượng HD mượt mà" />
+<meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="fb:app_id" content="1234567890" /> <!-- Thay bằng Facebook App ID thật -->
 
-  <style>
-    html, body { margin:0; padding:0; height:100%; background:#000; }
-    .video-container{ position:relative; width:100%; height:100%; overflow:hidden; }
-    .video-container video{ width:100%; height:100%; object-fit:cover; }
-    .top-logo-right{ position:absolute; top:10px; right:10px; z-index:2000; max-width:150px; }
-    .top-logo-left{ position:absolute; top:10px; left:10px; z-index:2000; max-width:150px; }
-    .bottom-logo-left{ position:absolute; bottom:10px; left:10px; z-index:2000; max-width:120px; }
-    .overlay{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; }
-    .cta{ display:flex; align-items:center; gap:8px; background:rgba(0,17,61,0.85); color:#fff;
-          border:none; border-radius:8px; padding:10px 18px; font-size:16px; cursor:pointer; }
-    .cta img{ width:24px; height:24px; }
-    @media (max-width:768px){
-      .overlay{ top:auto; bottom:320px; transform:translateX(-50%); }
-      .top-logo-left, .top-logo-right{ max-width:100px; }
-      .bottom-logo-left{ max-width:90px; }
+<!-- Favicon -->
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background-color: black;
     }
-    /* thumbnail dành cho bot */
-    #thumbnail{ display:none; }
-  </style>
+    video, .fallback {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .fallback {
+        z-index: 0;
+    }
+    video {
+        z-index: 1;
+    }
+    .logo-top-right {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 10;
+        width: 150px;
+    }
+    .logo-bottom-left {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        z-index: 10;
+        width: 120px;
+    }
+    .btn-link {
+        position: absolute;
+        bottom: 50px;
+        right: 20px;
+        z-index: 10;
+        padding: 10px 20px;
+        background: rgba(255,255,255,0.8);
+        color: black;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+    .btn-link:hover {
+        background: rgba(255,255,255,1);
+    }
+</style>
 </head>
 <body>
-  <!-- Ảnh "sạch" cho bot/crawler -->
-  <div id="thumbnail">
-    <img src="facebook reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
-  </div>
 
-  <!-- nội dung thực sự cho người dùng -->
-  <div id="real-content" class="video-container" style="display:none;">
-    <video id="main-video" autoplay muted loop playsinline></video>
+<!-- Ảnh fallback để hiển thị ngay lập tức -->
+<img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg" alt="Panda Live Idols" class="fallback" loading="eager">
 
-    <img src="panda number.png" alt="Panda Number Logo" class="top-logo-left" />
-    <img src="panda class.png" alt="Panda Class Logo" class="top-logo-right" />
-    <img src="kbj logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
+<!-- Video nền -->
+<video id="bg-video" autoplay muted loop playsinline preload="auto" poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg">
+    <source src="https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4" type="video/mp4">
+</video>
 
-    <div class="overlay">
-      <button class="cta" id="ctaBtn">
-        <img src="logo.png" alt="Panda Logo" />
-        Panda Live Idols
-      </button>
-    </div>
-  </div>
+<!-- Logo góc trên bên phải -->
+<img src="panda-class-logo.png" alt="Panda Class" class="logo-top-right">
 
-  <script>
-    // ---- hàm hỗ trợ giải mã ----
-    function xorDecode(str, key) {
-      let res = '';
-      for (let i = 0; i < str.length; i++) {
-        res += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-      }
-      return res;
-    }
-    function reverseString(s) { return s.split('').reverse().join(''); }
+<!-- Logo góc dưới bên trái -->
+<img src="kbj-logo.png" alt="KBJ Logo" class="logo-bottom-left">
 
-    // ---- chuỗi mã hóa (Base64 của chuỗi XOR) ----
-    // (đây đã mã hóa an toàn; JS sẽ atob -> xorDecode -> reverse -> URL thật)
-    const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
-    const xorKey = "PandaKey2025";
+<!-- Nút link -->
+<a href="https://pandalive.co.kr" class="btn-link">Panda Live Idols</a>
 
-    // ---- phát hiện bot/crawler đơn giản ----
-    function isBot() {
-      const ua = (navigator.userAgent || "").toLowerCase();
-      const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
-      return keywords.some(k => ua.indexOf(k) !== -1);
-    }
-
-    // ---- chính: nếu bot thì hiện ảnh sạch, còn người thật thì giải mã và load video ----
-    if (isBot()) {
-      document.getElementById("thumbnail").style.display = "block";
-    } else {
-      // decode base64 -> chuỗi bytes -> xor -> reverse -> URL
-      try {
-        const raw = atob(enc3_b64);                   // raw: string chứa bytes XORed
-        const step = xorDecode(raw, xorKey);          // step: đây là URL đảo ngược
-        const videoURL = reverseString(step);         // video thật
-
-        // hiển thị video
-        document.getElementById("thumbnail").style.display = "none";
-        const real = document.getElementById("real-content");
-        real.style.display = "block";
-
-        const vid = document.getElementById("main-video");
-        vid.src = videoURL;
-        vid.load();
-        // thử play (autoplay nên thường chạy vì muted)
-        const p = vid.play();
-        if (p && p.catch) p.catch(()=>{/* autoplay bị chặn - người dùng sẽ cần bấm */});
-      } catch (e) {
-        // nếu có lỗi fallback: hiện ảnh an toàn
-        console.error("Giải mã video thất bại:", e);
-        document.getElementById("thumbnail").style.display = "block";
-      }
-    }
-
-    // nút chuyển link
-    document.getElementById("ctaBtn").addEventListener("click", function(){
-      let a = document.createElement('a');
-      a.href = "https://s.shopee.vn/30dchvC74f";
-      a.target = "_blank"; a.rel = "noopener";
-      document.body.appendChild(a); a.click();
-      setTimeout(()=>{ window.location.href = "https://www.pandalive.co.kr/live"; }, 100);
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('bg-video');
+    
+    // Force play trên iOS
+    video.play().catch(() => {
+        // Nếu Safari chặn autoplay thì sẽ thử lại khi user tương tác
+        document.body.addEventListener('touchstart', () => {
+            video.play();
+        }, { once: true });
     });
-  </script>
+});
+</script>
+
 </body>
 </html>
 
