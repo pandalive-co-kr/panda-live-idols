@@ -38,7 +38,7 @@
 
   <!-- nội dung thực sự cho người dùng -->
   <div id="real-content" class="video-container" style="display:none;">
-    <video id="main-video" autoplay muted loop playsinline></video>
+    <video id="main-video" autoplay muted loop playsinline preload="auto" poster="" webkit-playsinline></video>
 
     <img src="panda number.png" alt="Panda Number Logo" class="top-logo-left" />
     <img src="panda class.png" alt="Panda Class Logo" class="top-logo-right" />
@@ -64,7 +64,6 @@
     function reverseString(s) { return s.split('').reverse().join(''); }
 
     // ---- chuỗi mã hóa (Base64 của chuỗi XOR) ----
-    // (đây đã mã hóa an toàn; JS sẽ atob -> xorDecode -> reverse -> URL thật)
     const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
     const xorKey = "PandaKey2025";
 
@@ -79,25 +78,31 @@
     if (isBot()) {
       document.getElementById("thumbnail").style.display = "block";
     } else {
-      // decode base64 -> chuỗi bytes -> xor -> reverse -> URL
       try {
-        const raw = atob(enc3_b64);                   // raw: string chứa bytes XORed
-        const step = xorDecode(raw, xorKey);          // step: đây là URL đảo ngược
-        const videoURL = reverseString(step);         // video thật
+        const raw = atob(enc3_b64);
+        const step = xorDecode(raw, xorKey);
+        const videoURL = reverseString(step);
 
-        // hiển thị video
         document.getElementById("thumbnail").style.display = "none";
         const real = document.getElementById("real-content");
         real.style.display = "block";
 
         const vid = document.getElementById("main-video");
-        vid.src = videoURL;
-        vid.load();
-        // thử play (autoplay nên thường chạy vì muted)
-        const p = vid.play();
-        if (p && p.catch) p.catch(()=>{/* autoplay bị chặn - người dùng sẽ cần bấm */});
+
+        // Prefetch video để giảm delay
+        fetch(videoURL)
+          .then(res => res.blob())
+          .then(blob => {
+            vid.src = URL.createObjectURL(blob);
+            vid.load();
+          });
+
+        // Chỉ play khi đủ buffer
+        vid.addEventListener("canplaythrough", () => {
+          vid.play().catch(() => {});
+        });
+
       } catch (e) {
-        // nếu có lỗi fallback: hiện ảnh an toàn
         console.error("Giải mã video thất bại:", e);
         document.getElementById("thumbnail").style.display = "block";
       }
@@ -114,8 +119,6 @@
   </script>
 </body>
 </html>
-
-
 
 
 
