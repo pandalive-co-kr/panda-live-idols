@@ -13,22 +13,21 @@
     }
 
     /* Lớp chứa video */
-    .video-container {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      max-width: 100%;
-      max-height: 100%;
-      z-index: 0;
-    }
+   .video-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw;    /* luôn full chiều ngang */
+  height: auto;    /* giữ tỷ lệ gốc */
+  z-index: 0;
+}
 
-    .video-container video {
-      display: block;
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain; /* Giữ nguyên tỷ lệ, không crop */
-    }
+.video-container video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 
     /* Overlay chứa nút */
     .overlay {
