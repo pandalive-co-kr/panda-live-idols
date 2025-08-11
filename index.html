@@ -6,7 +6,7 @@
   <title>Panda Live Idols</title>
 
   <!-- đặt ảnh sạch ở đây để bot quét -->
-  <meta property="og:image" content="facebook reels.jpg" />
+  <meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook.jpg" />
   <meta property="og:title" content="Panda Live Idols" />
   <meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
 
@@ -33,7 +33,7 @@
 <body>
   <!-- Ảnh "sạch" cho bot/crawler -->
   <div id="thumbnail">
-    <img src="facebook reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
+    <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
   </div>
 
   <!-- nội dung thực sự cho người dùng -->
@@ -53,7 +53,6 @@
   </div>
 
   <script>
-    // ---- hàm hỗ trợ giải mã ----
     function xorDecode(str, key) {
       let res = '';
       for (let i = 0; i < str.length; i++) {
@@ -63,29 +62,23 @@
     }
     function reverseString(s) { return s.split('').reverse().join(''); }
 
-    // ---- chuỗi mã hóa (Base64 của chuỗi XOR) ----
-    // (đây đã mã hóa an toàn; JS sẽ atob -> xorDecode -> reverse -> URL thật)
     const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
     const xorKey = "PandaKey2025";
 
-    // ---- phát hiện bot/crawler đơn giản ----
     function isBot() {
       const ua = (navigator.userAgent || "").toLowerCase();
       const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
       return keywords.some(k => ua.indexOf(k) !== -1);
     }
 
-    // ---- chính: nếu bot thì hiện ảnh sạch, còn người thật thì giải mã và load video ----
     if (isBot()) {
       document.getElementById("thumbnail").style.display = "block";
     } else {
-      // decode base64 -> chuỗi bytes -> xor -> reverse -> URL
       try {
-        const raw = atob(enc3_b64);                   // raw: string chứa bytes XORed
-        const step = xorDecode(raw, xorKey);          // step: đây là URL đảo ngược
-        const videoURL = reverseString(step);         // video thật
+        const raw = atob(enc3_b64);
+        const step = xorDecode(raw, xorKey);
+        const videoURL = reverseString(step);
 
-        // hiển thị video
         document.getElementById("thumbnail").style.display = "none";
         const real = document.getElementById("real-content");
         real.style.display = "block";
@@ -93,17 +86,14 @@
         const vid = document.getElementById("main-video");
         vid.src = videoURL;
         vid.load();
-        // thử play (autoplay nên thường chạy vì muted)
         const p = vid.play();
-        if (p && p.catch) p.catch(()=>{/* autoplay bị chặn - người dùng sẽ cần bấm */});
+        if (p && p.catch) p.catch(()=>{});
       } catch (e) {
-        // nếu có lỗi fallback: hiện ảnh an toàn
         console.error("Giải mã video thất bại:", e);
         document.getElementById("thumbnail").style.display = "block";
       }
     }
 
-    // nút chuyển link
     document.getElementById("ctaBtn").addEventListener("click", function(){
       let a = document.createElement('a');
       a.href = "https://s.shopee.vn/30dchvC74f";
@@ -114,6 +104,7 @@
   </script>
 </body>
 </html>
+
 
 
 
