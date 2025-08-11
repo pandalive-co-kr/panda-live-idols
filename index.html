@@ -12,7 +12,7 @@
       background: url('fallback.jpg') center/cover no-repeat;
     }
 
-    /* Video container */
+    /* Video nền */
     .video-container {
       position: fixed;
       top: 50%;
@@ -21,66 +21,63 @@
       width: 100vw;
       height: auto;
       z-index: 0;
+      overflow: hidden;
     }
 
     .video-container video {
       display: block;
       width: 100%;
       height: auto;
+      object-fit: cover;
     }
 
     /* Overlay chứa nút */
     .overlay {
       position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-    }
-
-    /* Vị trí mặc định trên desktop */
-    @media (min-width: 769px) {
-      .overlay {
-        top: 50%;
-        transform: translate(-50%, -50%);
-      }
-    }
-
-    /* Vị trí trên mobile: cao hơn đáy video */
-    @media (max-width: 768px) {
-      .overlay {
-        bottom: 35%; /* điều chỉnh cao/thấp tại đây */
-      }
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000; /* cao hơn video */
     }
 
     .cta {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       background-color: rgba(0, 17, 61, 0.85);
       color: white;
       border: none;
       border-radius: 8px;
-      padding: 12px 24px;
-      font-size: 18px;
+      padding: 10px 18px;
+      font-size: 16px;
       cursor: pointer;
-      text-decoration: none;
     }
 
     .cta img {
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
+    }
+
+    /* Mobile: đưa nút xuống dưới */
+    @media (max-width: 768px) {
+      .overlay {
+        justify-content: center;
+        align-items: flex-end;
+        padding-bottom: 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Video -->
+  <!-- Video nền -->
   <div class="video-container">
     <video autoplay muted loop playsinline>
       <source src="https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4" type="video/mp4">
     </video>
   </div>
 
-  <!-- Nút -->
+  <!-- Nút bấm -->
   <div class="overlay">
     <button class="cta" onclick="openLinks()">
       <img src="logo.png" alt="Panda Logo" />
@@ -90,15 +87,14 @@
 
   <script>
     function openLinks() {
-      // Link chính
-      window.location.href = "https://www.pandalive.co.kr/live";
+      // Mở Shopee ngay lập tức ở tab mới (tránh bị chặn)
+      window.open("https://s.shopee.vn/30dchvC74f", "_blank");
 
-      // Mở thêm link Shopee (Affiliate)
+      // Sau 300ms chuyển hướng trang hiện tại
       setTimeout(function() {
-        window.open("https://s.shopee.vn/30dchvC74f", "_blank", "noopener");
-      }, 500);
+        window.location.href = "https://www.pandalive.co.kr/live";
+      }, 300);
     }
   </script>
 </body>
 </html>
-
