@@ -11,6 +11,7 @@
       height: 100%;
       background: url('fallback.jpg') center/cover no-repeat;
     }
+
     .video-container {
       position: fixed;
       top: 50%;
@@ -21,12 +22,14 @@
       z-index: 0;
       overflow: hidden;
     }
+
     .video-container video {
       display: block;
       width: 100%;
       height: auto;
       object-fit: cover;
     }
+
     .overlay {
       position: fixed;
       inset: 0;
@@ -34,8 +37,8 @@
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      pointer-events: none;
     }
+
     .cta {
       display: flex;
       align-items: center;
@@ -47,15 +50,16 @@
       padding: 10px 18px;
       font-size: 16px;
       cursor: pointer;
-      pointer-events: all;
-      text-decoration: none;
     }
+
     .cta img {
       width: 24px;
       height: 24px;
     }
+
     @media (max-width: 768px) {
       .overlay {
+        justify-content: center;
         align-items: flex-end;
         padding-bottom: 20px;
       }
@@ -63,14 +67,12 @@
   </style>
 </head>
 <body>
-  <!-- Video nền -->
   <div class="video-container">
     <video autoplay muted loop playsinline>
       <source src="https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4" type="video/mp4">
     </video>
   </div>
 
-  <!-- Nút bấm -->
   <div class="overlay">
     <button class="cta" onclick="openLinks()">
       <img src="logo.png" alt="Panda Logo" />
@@ -80,13 +82,19 @@
 
   <script>
     function openLinks() {
-      // Mở Shopee ở tab mới ngay khi click
-      window.open("https://s.shopee.vn/30dchvC74f", "_blank");
+      // Tạo một liên kết ảo để mở Shopee (tránh popup trắng)
+      let a = document.createElement('a');
+      a.href = "https://s.shopee.vn/30dchvC74f";
+      a.target = "_blank";
+      a.rel = "noopener";
+      document.body.appendChild(a);
 
-      // Chuyển tab hiện tại sang Panda Live sau 300ms
-      setTimeout(function() {
+      a.click(); // Mở Shopee ngay
+
+      // Chuyển hướng tab hiện tại sang Panda Live
+      setTimeout(() => {
         window.location.href = "https://www.pandalive.co.kr/live";
-      }, 300);
+      }, 100);
     }
   </script>
 </body>
