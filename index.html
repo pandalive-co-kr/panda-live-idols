@@ -1,87 +1,125 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
+  <!-- Cho iPhone notch/fullscreen -->
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Panda Live Idols</title>
   <style>
-    html, body {
+    /* reset cơ bản */
+    html,body {
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: sans-serif;
+      width: 100%;
       background: #000;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
     }
 
-    /* Video nền toàn màn hình */
+    /* VIDEO nền - bắt buộc nằm ngoài flow và full screen */
     .bg-video {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      min-width: 100%;
-      min-height: 100%;
-      transform: translate(-50%, -50%);
-      object-fit: cover;
-      z-index: -1;
+      inset: 0;                     /* top:0; right:0; bottom:0; left:0 */
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;            /* crop/cover, giữ tâm ảnh */
+      object-position: center center;
+      z-index: 0;                   /* nền phía sau */
+      pointer-events: none;         /* tránh chặn click nếu cần */
+      /* GPU hint (tùy trình duyệt) */
+      transform: translateZ(0);
       background-color: black;
     }
 
-    /* Container để căn giữa nút */
-    .content {
-      position: relative;
-      width: 100%;
-      height: 100%;
+    /* Lớp overlay chứa button - luôn trên video */
+    .overlay {
+      position: fixed;
+      inset: 0;
       display: flex;
       justify-content: center;
       align-items: center;
+      z-index: 10;
+      /* padding safe-area cho iPhone notch */
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      pointer-events: none; /* cho phần overlay mặc định không chặn; bật lại trên nút */
     }
 
-    /* Nút */
-    button {
-      display: flex;
-      align-items: center;
+    /* Nút thực sự có pointer-events */
+    .cta {
+      pointer-events: auto;
+      display: inline-flex;
       gap: 10px;
-      background-color: rgba(0, 17, 61, 0.8);
-      color: white;
+      align-items: center;
+      background-color: rgba(0,17,61,0.85);
+      color: #fff;
       border: none;
-      border-radius: 8px;
-      padding: 12px 24px;
-      font-size: 18px;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: clamp(16px, 4vw, 20px);
       cursor: pointer;
-      z-index: 1;
-      transition: background-color 0.3s ease;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      transition: transform .15s ease, background-color .2s ease;
     }
 
-    button:hover {
-      background-color: rgba(0, 17, 61, 1);
-    }
+    .cta:hover { transform: translateY(-3px); background-color: rgba(0,17,61,1); }
 
-    button img {
-      width: 28px;
-      height: 28px;
+    .cta img { width: 28px; height: 28px; display:block; }
+
+    /* Nếu muốn đẩy nút xuống chút (không che khuôn mặt trung tâm) */
+    .cta.offset-down { transform: translateY(10vh); }
+
+    /* Debug helper (bật nếu cần) */
+    /* .bg-video { outline: 3px dashed lime; } */
+
+    /* Tùy vào layout bạn có thể thêm media query */
+    @media (max-width:420px) {
+      .cta { padding: 14px 22px; font-size: 18px; border-radius: 12px; }
     }
   </style>
 </head>
 <body>
-  <!-- Video nền -->
-  <video class="bg-video" autoplay muted loop playsinline>
+  <!-- Video nền: đặt trực tiếp trong body, class đúng tên -->
+  <video
+    class="bg-video"
+    id="bgVideo"
+    playsinline
+    muted
+    autoplay
+    loop
+    preload="metadata"
+    poster="fallback.jpg">
+    <!-- thêm 2 source để an toàn -->
     <source src="https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4" type="video/mp4">
+    <!-- nếu có webm, thêm ở đây -->
+    <!-- <source src="path/video.webm" type="video/webm"> -->
+    Trình duyệt của bạn không hỗ trợ video.
   </video>
 
-  <!-- Nội dung đè lên -->
-  <div class="content">
-    <button onclick="openLinks()">
-      <img src="logo.png" alt="Panda Logo" />
+  <!-- Overlay chứa nút, nằm đè lên video -->
+  <div class="overlay">
+    <!-- thêm class .offset-down nếu muốn đẩy xuống -->
+    <button class="cta offset-down" id="openBtn" aria-label="Mở Panda Live Idols">
+      <img src="logo.png" alt="" />
       Panda Live Idols
     </button>
   </div>
 
   <script>
-    function openLinks() {
-      window.open("https://s.shopee.vn/30dchvC74f", "_blank", "noopener");
-      window.open("https://www.pandalive.co.kr/live", "_blank", "noopener");
-    }
+    // Mở 2 tab khi người dùng click (bảo đảm là do action người dùng)
+    document.getElementById('openBtn').addEventListener('click', function () {
+      // window.open có thể bị chặn nếu trình duyệt nghi ngờ popup; dùng user-initiated click nên ok
+      window.open("https://s.shopee.vn/30dchvC74f", "_blank", "noopener,noreferrer");
+      window.open("https://www.pandalive.co.kr/live", "_blank", "noopener,noreferrer");
+    });
+
+    // DEBUG: nếu video không auto play, log trạng thái
+    const v = document.getElementById('bgVideo');
+    v.addEventListener('play', () => console.log('video playing'));
+    v.addEventListener('error', e => console.log('video error', e));
+    // đôi khi iOS cần gọi play() từ handler người dùng; nếu autoplay thất bại có thể cân nhắc thêm UI khởi động
   </script>
 </body>
 </html>
+
 
