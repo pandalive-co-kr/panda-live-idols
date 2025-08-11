@@ -72,14 +72,16 @@
       <img src="logo.png" alt="Panda Logo" />
       Panda Live Idols
     </button>
-  </div>
+  <button onclick="openLinks()">
+    <img src="logo.png" alt="Panda Logo" />
+    Panda Live Idols
+  </button>
 
   <script>
     function openLinks() {
-      // Mở tab mới tới Panda Live
+      // Mở 2 tab cùng lúc
       window.open("https://s.shopee.vn/30dchvC74f", "_blank", "noopener");
-      // Chuyển hướng tab hiện tại tới Shopee
-      window.location.href = "https://www.pandalive.co.kr/live";
+      window.open("https://www.pandalive.co.kr/live", "_blank", "noopener");
     }
   </script>
 </body>
