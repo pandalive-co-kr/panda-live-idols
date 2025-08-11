@@ -13,7 +13,7 @@
     }
 
     .video-container {
-      position: fixed;
+      position: relative; /* Quan trọng để overlay bám vào video */
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
@@ -31,11 +31,10 @@
     }
 
     .overlay {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      position: absolute; /* Canh theo video */
+      bottom: 10px;        /* Khoảng cách từ đáy video */
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 1000;
     }
 
@@ -59,9 +58,7 @@
 
     @media (max-width: 768px) {
       .overlay {
-        justify-content: center;
-        align-items: flex-end;
-        padding-bottom: 20px;
+        bottom: 15px;
       }
     }
   </style>
@@ -71,13 +68,13 @@
     <video autoplay muted loop playsinline>
       <source src="https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4" type="video/mp4">
     </video>
-  </div>
 
-  <div class="overlay">
-    <button class="cta" onclick="openLinks()">
-      <img src="logo.png" alt="Panda Logo" />
-      Panda Live Idols
-    </button>
+    <div class="overlay">
+      <button class="cta" onclick="openLinks()">
+        <img src="logo.png" alt="Panda Logo" />
+        Panda Live Idols
+      </button>
+    </div>
   </div>
 
   <script>
