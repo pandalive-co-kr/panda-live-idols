@@ -13,7 +13,7 @@
 <meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="fb:app_id" content="1234567890" /> <!-- Thay bằng Facebook App ID thật -->
+<meta property="fb:app_id" content="1234567890" />
 
 <!-- Favicon -->
 <link rel="icon" href="favicon.ico" type="image/x-icon">
@@ -34,12 +34,8 @@
         height: 100%;
         object-fit: cover;
     }
-    .fallback {
-        z-index: 0;
-    }
-    video {
-        z-index: 1;
-    }
+    .fallback { z-index: 0; }
+    video { z-index: 1; }
     .logo-top-right {
         position: absolute;
         top: 20px;
@@ -66,20 +62,16 @@
         border-radius: 8px;
         font-weight: bold;
     }
-    .btn-link:hover {
-        background: rgba(255,255,255,1);
-    }
+    .btn-link:hover { background: rgba(255,255,255,1); }
 </style>
 </head>
 <body>
 
-<!-- Ảnh fallback để hiển thị ngay lập tức -->
+<!-- Ảnh fallback -->
 <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg" alt="Panda Live Idols" class="fallback" loading="eager">
 
-<!-- Video nền -->
-<video id="bg-video" autoplay muted loop playsinline preload="auto" poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg">
-    <source src="https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4" type="video/mp4">
-</video>
+<!-- Video sẽ được chèn bằng JS để preload trước -->
+<div id="video-container"></div>
 
 <!-- Logo góc trên bên phải -->
 <img src="panda-class-logo.png" alt="Panda Class" class="logo-top-right">
@@ -92,20 +84,35 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const video = document.getElementById('bg-video');
-    
-    // Force play trên iOS
-    video.play().catch(() => {
-        // Nếu Safari chặn autoplay thì sẽ thử lại khi user tương tác
-        document.body.addEventListener('touchstart', () => {
-            video.play();
-        }, { once: true });
+    const container = document.getElementById('video-container');
+
+    // Tạo video ẩn để preload
+    const tempVideo = document.createElement('video');
+    tempVideo.src = "https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4";
+    tempVideo.muted = true;
+    tempVideo.playsInline = true;
+    tempVideo.preload = "auto";
+
+    tempVideo.addEventListener('canplaythrough', () => {
+        // Khi preload xong, thay thế vào DOM và play ngay
+        tempVideo.autoplay = true;
+        tempVideo.loop = true;
+        tempVideo.poster = "https://pandalive-co-kr.github.io/panda-live-idols/facebook-thumb.jpg";
+        container.innerHTML = "";
+        container.appendChild(tempVideo);
+        tempVideo.play().catch(() => {
+            document.body.addEventListener('touchstart', () => tempVideo.play(), { once: true });
+        });
     });
+
+    // Bắt đầu load video ngay
+    tempVideo.load();
 });
 </script>
 
 </body>
 </html>
+
 
 
 
