@@ -6,7 +6,7 @@
   <title>Panda Live Idols</title>
 
   <!-- đặt ảnh sạch ở đây để bot quét -->
-  <meta property="og:image" content="facebook reels.jpg" />
+  <meta property="og:image" content="facebook-reels.jpg" />
   <meta property="og:title" content="Panda Live Idols" />
   <meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
 
@@ -14,17 +14,17 @@
     html, body { margin:0; padding:0; height:100%; background:#000; }
     .video-container{ position:relative; width:100%; height:100%; overflow:hidden; }
     .video-container video{ width:100%; height:100%; object-fit:cover; }
-    .top-logo-right{ position:absolute; top:10px; right:10px; z-index:2000; max-width:150px; }
-    .top-logo-left{ position:absolute; top:10px; left:10px; z-index:2000; max-width:150px; }
-    .bottom-logo-left{ position:absolute; bottom:10px; left:10px; z-index:2000; max-width:120px; }
+    .panda-number{ position:absolute; top:10px; left:10px; z-index:2000; max-width:150px; }
+    .panda-class{ position:absolute; top:10px; right:10px; z-index:2000; max-width:150px; }
+    .kbj-logo{ position:absolute; bottom:10px; left:10px; z-index:2000; max-width:120px; }
     .overlay{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; }
     .cta{ display:flex; align-items:center; gap:8px; background:rgba(0,17,61,0.85); color:#fff;
           border:none; border-radius:8px; padding:10px 18px; font-size:16px; cursor:pointer; }
     .cta img{ width:24px; height:24px; }
     @media (max-width:768px){
       .overlay{ top:auto; bottom:320px; transform:translateX(-50%); }
-      .top-logo-left, .top-logo-right{ max-width:100px; }
-      .bottom-logo-left{ max-width:90px; }
+      .panda-number, .panda-class{ max-width:100px; }
+      .kbj-logo{ max-width:90px; }
     }
     /* thumbnail dành cho bot */
     #thumbnail{ display:none; }
@@ -33,16 +33,16 @@
 <body>
   <!-- Ảnh "sạch" cho bot/crawler -->
   <div id="thumbnail">
-    <img src="facebook reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
+    <img src="facebook-reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
   </div>
 
   <!-- nội dung thực sự cho người dùng -->
   <div id="real-content" class="video-container" style="display:none;">
     <video id="main-video" autoplay muted loop playsinline></video>
 
-    <img src="panda number.png" alt="Panda Number Logo" class="top-logo-left" />
-    <img src="panda class.png" alt="Panda Class Logo" class="top-logo-right" />
-    <img src="kbj logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
+    <img src="panda-number.png" alt="Panda Number Logo" class="panda-number" />
+    <img src="panda-class.png" alt="Panda Class Logo" class="panda-class" />
+    <img src="kbj-logo.jpg" alt="KBJ Logo" class="kbj-logo" />
 
     <div class="overlay">
       <button class="cta" id="ctaBtn">
@@ -53,7 +53,6 @@
   </div>
 
   <script>
-    // ---- hàm hỗ trợ giải mã ----
     function xorDecode(str, key) {
       let res = '';
       for (let i = 0; i < str.length; i++) {
@@ -63,29 +62,23 @@
     }
     function reverseString(s) { return s.split('').reverse().join(''); }
 
-    // ---- chuỗi mã hóa (Base64 của chuỗi XOR) ----
-    // (đây đã mã hóa an toàn; JS sẽ atob -> xorDecode -> reverse -> URL thật)
     const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
     const xorKey = "PandaKey2025";
 
-    // ---- phát hiện bot/crawler đơn giản ----
     function isBot() {
       const ua = (navigator.userAgent || "").toLowerCase();
       const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
       return keywords.some(k => ua.indexOf(k) !== -1);
     }
 
-    // ---- chính: nếu bot thì hiện ảnh sạch, còn người thật thì giải mã và load video ----
     if (isBot()) {
       document.getElementById("thumbnail").style.display = "block";
     } else {
-      // decode base64 -> chuỗi bytes -> xor -> reverse -> URL
       try {
-        const raw = atob(enc3_b64);                   // raw: string chứa bytes XORed
-        const step = xorDecode(raw, xorKey);          // step: đây là URL đảo ngược
-        const videoURL = reverseString(step);         // video thật
+        const raw = atob(enc3_b64);
+        const step = xorDecode(raw, xorKey);
+        const videoURL = reverseString(step);
 
-        // hiển thị video
         document.getElementById("thumbnail").style.display = "none";
         const real = document.getElementById("real-content");
         real.style.display = "block";
@@ -93,17 +86,14 @@
         const vid = document.getElementById("main-video");
         vid.src = videoURL;
         vid.load();
-        // thử play (autoplay nên thường chạy vì muted)
         const p = vid.play();
-        if (p && p.catch) p.catch(()=>{/* autoplay bị chặn - người dùng sẽ cần bấm */});
+        if (p && p.catch) p.catch(()=>{});
       } catch (e) {
-        // nếu có lỗi fallback: hiện ảnh an toàn
         console.error("Giải mã video thất bại:", e);
         document.getElementById("thumbnail").style.display = "block";
       }
     }
 
-    // nút chuyển link
     document.getElementById("ctaBtn").addEventListener("click", function(){
       let a = document.createElement('a');
       a.href = "https://s.shopee.vn/30dchvC74f";
