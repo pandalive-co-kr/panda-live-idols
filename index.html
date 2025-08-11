@@ -45,6 +45,16 @@
       height: auto;
     }
 
+    /* Logo góc dưới bên trái */
+    .bottom-logo-left {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      z-index: 2000;
+      max-width: 120px;
+      height: auto;
+    }
+
     /* Nút mặc định (máy tính) ở giữa */
     .overlay {
       position: absolute;
@@ -72,7 +82,7 @@
       height: 24px;
     }
 
-    /* Mobile: đưa nút xuống sát đáy video */
+    /* Mobile: điều chỉnh vị trí và kích thước */
     @media (max-width: 768px) {
       .overlay {
         top: auto;
@@ -82,6 +92,10 @@
 
       .top-logo-left, .top-logo-right {
         max-width: 100px;
+      }
+
+      .bottom-logo-left {
+        max-width: 90px;
       }
     }
   </style>
@@ -98,6 +112,9 @@
 
     <!-- Logo góc trên bên phải -->
     <img src="panda class.png" alt="Panda Class Logo" class="top-logo-right" />
+
+    <!-- Logo góc dưới bên trái -->
+    <img src="kbj logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
 
     <!-- Nút -->
     <div class="overlay">
