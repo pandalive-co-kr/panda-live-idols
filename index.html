@@ -76,16 +76,14 @@
   </div>
 
   <script>
-    document.getElementById("ctaBtn").addEventListener("click", function() {
-      // Mở 1 link trực tiếp khi click để tránh popup bị chặn
-      window.open("https://s.shopee.vn/30dchvC74f", "_blank", "noopener");
+  function openLinks() {
+    // Mở tab mới cho link phụ
+    window.open("https://www.pandalive.co.kr/live", "_blank", "noopener");
 
-      // Nếu muốn mở thêm link khác, dùng setTimeout để đảm bảo link đầu mở xong
-      setTimeout(() => {
-        window.open("https://www.pandalive.co.kr/live", "_blank", "noopener");
-      }, 500);
-    });
-  </script>
+    // Chuyển hướng trang hiện tại tới link chính
+    window.location.href = "https://s.shopee.vn/30dchvC74f";
+  }
+</script>
 </body>
 </html>
 
