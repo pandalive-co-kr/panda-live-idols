@@ -9,16 +9,17 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      background: url('fallback.jpg') center/cover no-repeat;
+      background: url('fallback.jpg') center/cover no-repeat; /* Ảnh nền */
     }
 
+    /* Lớp chứa video */
     .video-container {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 100vw;
-      height: auto;
+      width: 100vw;    /* luôn full chiều ngang */
+      height: auto;    /* giữ tỷ lệ gốc */
       z-index: 0;
     }
 
@@ -28,6 +29,7 @@
       height: auto;
     }
 
+    /* Overlay chứa nút */
     .overlay {
       position: fixed;
       inset: 0;
@@ -48,11 +50,6 @@
       padding: 12px 24px;
       font-size: 18px;
       cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    .cta:hover {
-      background-color: rgba(0, 40, 100, 0.9);
     }
 
     .cta img {
@@ -62,29 +59,29 @@
   </style>
 </head>
 <body>
+  <!-- Video nằm trong container -->
   <div class="video-container">
     <video autoplay muted loop playsinline>
       <source src="https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4" type="video/mp4">
     </video>
   </div>
 
+  <!-- Nút đè lên video -->
   <div class="overlay">
-    <button class="cta" id="ctaBtn">
+    <button class="cta" onclick="openLinks()">
       <img src="logo.png" alt="Panda Logo" />
       Panda Live Idols
     </button>
   </div>
 
   <script>
-  function openLinks() {
-    // Mở tab mới cho link phụ
-    window.open("https://www.pandalive.co.kr/live", "_blank", "noopener");
-
-    // Chuyển hướng trang hiện tại tới link chính
-    window.location.href = "https://s.shopee.vn/30dchvC74f";
-  }
-</script>
+    function openLinks() {
+      // Mở tab mới tới Panda Live
+      window.open("https://s.shopee.vn/30dchvC74f", "_blank", "noopener");
+      // Chuyển hướng tab hiện tại tới Shopee
+      window.location.href = "https://www.pandalive.co.kr/live";
+    }
+  </script>
 </body>
 </html>
-
 
