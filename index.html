@@ -4,150 +4,120 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Panda Live Idols</title>
-  <meta property="og:image" content="facebook.jpg" />
+
+  <!-- Ảnh sạch cho bot -->
+  <meta property="og:image" content="facebook reels.jpg" />
   <meta property="og:title" content="Panda Live Idols" />
   <meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
 
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #000;
+      margin: 0; padding: 0; height: 100%; background: #000;
     }
     .video-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+      position: relative; width: 100%; height: 100%; overflow: hidden;
     }
     .video-container video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      width: 100%; height: 100%; object-fit: cover;
     }
-    .top-logo-right {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 2000;
-      max-width: 150px;
-      height: auto;
-    }
-    .top-logo-left {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 2000;
-      max-width: 150px;
-      height: auto;
-    }
-    .bottom-logo-left {
-      position: absolute;
-      bottom: 10px;
-      left: 10px;
-      z-index: 2000;
-      max-width: 120px;
-      height: auto;
-    }
+    .top-logo-right { position: absolute; top: 10px; right: 10px; z-index: 2000; max-width: 150px; }
+    .top-logo-left { position: absolute; top: 10px; left: 10px; z-index: 2000; max-width: 150px; }
+    .bottom-logo-left { position: absolute; bottom: 10px; left: 10px; z-index: 2000; max-width: 120px; }
     .overlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 1000;
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;
     }
     .cta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background-color: rgba(0, 17, 61, 0.85);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-size: 16px;
-      cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      background-color: rgba(0, 17, 61, 0.85); color: white;
+      border: none; border-radius: 8px; padding: 10px 18px; font-size: 16px; cursor: pointer;
     }
-    .cta img {
-      width: 24px;
-      height: 24px;
-    }
+    .cta img { width: 24px; height: 24px; }
     @media (max-width: 768px) {
-      .overlay {
-        top: auto;
-        bottom: 320px;
-        transform: translateX(-50%);
-      }
-      .top-logo-left, .top-logo-right {
-        max-width: 100px;
-      }
-      .bottom-logo-left {
-        max-width: 90px;
-      }
-    }
-    /* Chỉ hiển thị ảnh thumbnail khi bot vào */
-    .thumbnail-only {
-      display: none;
+      .overlay { top: auto; bottom: 320px; transform: translateX(-50%); }
+      .top-logo-left, .top-logo-right { max-width: 100px; }
+      .bottom-logo-left { max-width: 90px; }
     }
   </style>
 </head>
 <body>
-  <!-- Ảnh thumbnail -->
-  <div id="thumbnail" class="thumbnail-only">
-    <img src="facebook.jpg" alt="Thumbnail" style="width:100%; height:auto;">
-  </div>
-
-  <!-- Nội dung video -->
-  <div id="real-content" class="video-container" style="display:none;">
-    <video autoplay muted loop playsinline>
-      <source src="https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4" type="video/mp4">
-    </video>
-
-    <img src="panda number.png" alt="Panda Number Logo" class="top-logo-left" />
-    <img src="panda class.png" alt="Panda Class Logo" class="top-logo-right" />
-    <img src="kbj logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
-
-    <div class="overlay">
-      <button class="cta" onclick="openLinks()">
-        <img src="logo.png" alt="Panda Logo" />
-        Panda Live Idols
-      </button>
-    </div>
+  <!-- Ảnh sạch cho bot -->
+  <div id="thumbnail">
+    <img src="facebook reels.jpg" alt="Thumbnail" style="width:100%; height:auto;">
   </div>
 
   <script>
-    // Hàm kiểm tra bot Facebook / Crawler
     function isBot() {
       const ua = navigator.userAgent.toLowerCase();
-      return ua.includes("facebookexternalhit") || 
-             ua.includes("facebot") || 
-             ua.includes("twitterbot") ||
-             ua.includes("linkedinbot") ||
-             ua.includes("slackbot") ||
-             ua.includes("bot");
+      const headless = navigator.webdriver || /headlesschrome/.test(ua);
+      const noPlugins = navigator.plugins.length === 0;
+      const noTouch = navigator.maxTouchPoints === 0;
+
+      return (
+        ua.includes("facebookexternalhit") ||
+        ua.includes("facebot") ||
+        ua.includes("twitterbot") ||
+        ua.includes("linkedinbot") ||
+        ua.includes("slackbot") ||
+        ua.includes("bot") ||
+        ua.includes("crawler") ||
+        ua.includes("spider") ||
+        headless || (noPlugins && noTouch)
+      );
     }
 
-    if (isBot()) {
-      document.getElementById("thumbnail").style.display = "block";
-    } else {
-      document.getElementById("real-content").style.display = "block";
+    // Giải mã XOR
+    function xorDecode(str, key) {
+      return str.split('').map((c, i) => String.fromCharCode(c.charCodeAt(0) ^ key.charCodeAt(i % key.length))).join('');
     }
 
-    function openLinks() {
-      let a = document.createElement('a');
-      a.href = "https://s.shopee.vn/30dchvC74f";
-      a.target = "_blank";
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        window.location.href = "https://www.pandalive.co.kr/live";
-      }, 100);
+    // Giải mã đảo ký tự
+    function reverseString(s) { return s.split("").reverse().join(""); }
+
+    // Giải mã Base64
+    function b64Decode(str) {
+      try { return decodeURIComponent(escape(atob(str))); }
+      catch { return ""; }
+    }
+
+    if (!isBot()) {
+      document.getElementById("thumbnail").remove();
+
+      // URL video mã hóa 3 lớp: Base64 → đảo ký tự → XOR
+      const enc3 = "AQQTChcfERQAGw5XV1ZbAxUVC0oGQBMKCw=="; // <-- đã được mã hóa
+      const step1 = xorDecode(enc3, "PandaKey2025"); // XOR giải mã
+      const step2 = reverseString(step1);             // Đảo ký tự
+      const videoURL = b64Decode(step2);               // Giải mã Base64
+
+      const container = document.createElement("div");
+      container.className = "video-container";
+      container.innerHTML = `
+        <video autoplay muted loop playsinline>
+          <source src="${videoURL}" type="video/mp4">
+        </video>
+        <img src="panda number.png" alt="Panda Number Logo" class="top-logo-left" />
+        <img src="panda class.png" alt="Panda Class Logo" class="top-logo-right" />
+        <img src="kbj logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
+        <div class="overlay">
+          <button class="cta" id="ctaBtn">
+            <img src="logo.png" alt="Panda Logo" />
+            Panda Live Idols
+          </button>
+        </div>
+      `;
+      document.body.appendChild(container);
+
+      document.getElementById("ctaBtn").addEventListener("click", function() {
+        let a = document.createElement('a');
+        a.href = "https://s.shopee.vn/30dchvC74f";
+        a.target = "_blank"; a.rel = "noopener";
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { window.location.href = "https://www.pandalive.co.kr/live"; }, 100);
+      });
     }
   </script>
 </body>
 </html>
+
 
 
 
