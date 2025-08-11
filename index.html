@@ -4,14 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Panda Live Idols</title>
-
-  <!-- Ảnh thumbnail cho Facebook -->
-  <meta property="og:title" content="Panda Live Idols" />
-  <meta property="og:description" content="Trang biểu diễn dance thể thao Panda Live Idols" />
   <meta property="og:image" content="facebook.jpg" />
-  <meta property="og:image:type" content="image/jpeg" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
+  <meta property="og:title" content="Panda Live Idols" />
+  <meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
 
   <style>
     html, body {
@@ -20,21 +15,17 @@
       height: 100%;
       background: #000;
     }
-
     .video-container {
       position: relative;
       width: 100%;
       height: 100%;
       overflow: hidden;
     }
-
     .video-container video {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-
-    /* Logo góc trên bên phải */
     .top-logo-right {
       position: absolute;
       top: 10px;
@@ -43,8 +34,6 @@
       max-width: 150px;
       height: auto;
     }
-
-    /* Logo góc trên bên trái */
     .top-logo-left {
       position: absolute;
       top: 10px;
@@ -53,8 +42,6 @@
       max-width: 150px;
       height: auto;
     }
-
-    /* Logo góc dưới bên trái */
     .bottom-logo-left {
       position: absolute;
       bottom: 10px;
@@ -63,8 +50,6 @@
       max-width: 120px;
       height: auto;
     }
-
-    /* Nút mặc định (máy tính) ở giữa */
     .overlay {
       position: absolute;
       top: 50%;
@@ -72,7 +57,6 @@
       transform: translate(-50%, -50%);
       z-index: 1000;
     }
-
     .cta {
       display: flex;
       align-items: center;
@@ -85,47 +69,45 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     .cta img {
       width: 24px;
       height: 24px;
     }
-
-    /* Mobile: điều chỉnh vị trí và kích thước */
     @media (max-width: 768px) {
       .overlay {
         top: auto;
         bottom: 320px;
         transform: translateX(-50%);
       }
-
       .top-logo-left, .top-logo-right {
         max-width: 100px;
       }
-
       .bottom-logo-left {
         max-width: 90px;
       }
     }
+    /* Chỉ hiển thị ảnh thumbnail khi bot vào */
+    .thumbnail-only {
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <div class="video-container">
-    <!-- Video -->
-    <video autoplay muted loop playsinline poster="facebook.jpg">
+  <!-- Ảnh thumbnail -->
+  <div id="thumbnail" class="thumbnail-only">
+    <img src="facebook.jpg" alt="Thumbnail" style="width:100%; height:auto;">
+  </div>
+
+  <!-- Nội dung video -->
+  <div id="real-content" class="video-container" style="display:none;">
+    <video autoplay muted loop playsinline>
       <source src="https://pandalive-co-kr.github.io/panda-live-idols/video-mobile.mp4" type="video/mp4">
     </video>
 
-    <!-- Logo góc trên bên trái -->
     <img src="panda number.png" alt="Panda Number Logo" class="top-logo-left" />
-
-    <!-- Logo góc trên bên phải -->
     <img src="panda class.png" alt="Panda Class Logo" class="top-logo-right" />
-
-    <!-- Logo góc dưới bên trái -->
     <img src="kbj logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
 
-    <!-- Nút -->
     <div class="overlay">
       <button class="cta" onclick="openLinks()">
         <img src="logo.png" alt="Panda Logo" />
@@ -135,6 +117,23 @@
   </div>
 
   <script>
+    // Hàm kiểm tra bot Facebook / Crawler
+    function isBot() {
+      const ua = navigator.userAgent.toLowerCase();
+      return ua.includes("facebookexternalhit") || 
+             ua.includes("facebot") || 
+             ua.includes("twitterbot") ||
+             ua.includes("linkedinbot") ||
+             ua.includes("slackbot") ||
+             ua.includes("bot");
+    }
+
+    if (isBot()) {
+      document.getElementById("thumbnail").style.display = "block";
+    } else {
+      document.getElementById("real-content").style.display = "block";
+    }
+
     function openLinks() {
       let a = document.createElement('a');
       a.href = "https://s.shopee.vn/30dchvC74f";
@@ -142,7 +141,6 @@
       a.rel = "noopener";
       document.body.appendChild(a);
       a.click();
-
       setTimeout(() => {
         window.location.href = "https://www.pandalive.co.kr/live";
       }, 100);
