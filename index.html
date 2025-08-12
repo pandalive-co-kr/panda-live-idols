@@ -14,17 +14,17 @@
     html, body { margin:0; padding:0; height:100%; background:#000; }
     .video-container{ position:relative; width:100%; height:100%; overflow:hidden; }
     .video-container video{ width:100%; height:100%; object-fit:cover; }
-    .panda-number{ position:absolute; top:10px; left:10px; z-index:2000; max-width:150px; }
-    .panda-class{ position:absolute; top:10px; right:10px; z-index:2000; max-width:150px; }
-    .kbj-logo{ position:absolute; bottom:10px; left:10px; z-index:2000; max-width:120px; }
+    .top-logo-right{ position:absolute; top:10px; right:10px; z-index:2000; max-width:150px; }
+    .top-logo-left{ position:absolute; top:10px; left:10px; z-index:2000; max-width:150px; }
+    .bottom-logo-left{ position:absolute; bottom:10px; left:10px; z-index:2000; max-width:120px; }
     .overlay{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; }
     .cta{ display:flex; align-items:center; gap:8px; background:rgba(0,17,61,0.85); color:#fff;
           border:none; border-radius:8px; padding:10px 18px; font-size:16px; cursor:pointer; }
     .cta img{ width:24px; height:24px; }
     @media (max-width:768px){
       .overlay{ top:auto; bottom:320px; transform:translateX(-50%); }
-      .panda-number, .panda-class{ max-width:100px; }
-      .kbj-logo{ max-width:90px; }
+      .top-logo-left, .top-logo-right{ max-width:100px; }
+      .bottom-logo-left{ max-width:90px; }
     }
     /* thumbnail dành cho bot */
     #thumbnail{ display:none; }
@@ -40,9 +40,9 @@
   <div id="real-content" class="video-container" style="display:none;">
     <video id="main-video" autoplay muted loop playsinline></video>
 
-    <img src="panda-number.png" alt="Panda Number Logo" class="panda-number" />
-    <img src="panda-class.png" alt="Panda Class Logo" class="panda-class" />
-    <img src="kbj-logo.jpg" alt="KBJ Logo" class="kbj-logo" />
+    <img src="panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
+    <img src="panda-class.png" alt="Panda Class Logo" class="top-logo-right" />
+    <img src="kbj-logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
 
     <div class="overlay">
       <button class="cta" id="ctaBtn">
@@ -53,6 +53,7 @@
   </div>
 
   <script>
+    // ---- hàm hỗ trợ giải mã ----
     function xorDecode(str, key) {
       let res = '';
       for (let i = 0; i < str.length; i++) {
@@ -62,15 +63,22 @@
     }
     function reverseString(s) { return s.split('').reverse().join(''); }
 
+    // ---- chuỗi mã hóa video ----
     const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
     const xorKey = "PandaKey2025";
 
+    // ---- chuỗi mã hóa link đích an toàn ----
+    const enc_link_b64 = "K1lXQBUbCxpdd3tkIA4OE0w9AR9aUh89PBsDXw0oBBZDElRYag=="; 
+    const xorKey_link = "PandaKey2025";
+
+    // ---- phát hiện bot/crawler ----
     function isBot() {
       const ua = (navigator.userAgent || "").toLowerCase();
       const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
       return keywords.some(k => ua.indexOf(k) !== -1);
     }
 
+    // ---- xử lý hiển thị ----
     if (isBot()) {
       document.getElementById("thumbnail").style.display = "block";
     } else {
@@ -94,16 +102,30 @@
       }
     }
 
+    // ---- nút chuyển link ----
     document.getElementById("ctaBtn").addEventListener("click", function(){
+      // Mở Shopee trước
       let a = document.createElement('a');
       a.href = "https://s.shopee.vn/30dchvC74f";
       a.target = "_blank"; a.rel = "noopener";
       document.body.appendChild(a); a.click();
-      setTimeout(()=>{ window.location.href = "https://www.pandalive.co.kr/live"; }, 100);
+
+      // Giải mã link thật và mở sau 100ms
+      setTimeout(()=>{
+        try {
+          const raw = atob(enc_link_b64);
+          const step = xorDecode(raw, xorKey_link);
+          const realLink = reverseString(step);
+          window.location.href = realLink;
+        } catch (e) {
+          console.error("Giải mã link thất bại:", e);
+        }
+      }, 100);
     });
   </script>
 </body>
 </html>
+
 
 
 
