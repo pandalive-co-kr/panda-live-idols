@@ -1,135 +1,74 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Panda Live Idols</title>
 
-  <meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Panda Live Idols" />
-  <meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
-  <meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
+  <!-- Open Graph -->
+  <meta property="og:title" content="Panda Live Idols">
+  <meta property="og:description" content="Xem video mới nhất của Panda Live Idols">
+  <meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg">
+  <meta property="og:type" content="website">
 
   <style>
-    html, body { margin:0; padding:0; height:100%; background:#000; }
-    .video-container{ position:relative; width:100%; height:100%; overflow:hidden; }
-    .video-container video{ width:100%; height:100%; object-fit:cover; background:#000; }
-    .top-logo-right{ position:absolute; top:10px; right:10px; z-index:2000; max-width:150px; }
-    .top-logo-left{ position:absolute; top:10px; left:10px; z-index:2000; max-width:150px; }
-    .bottom-logo-left{ position:absolute; bottom:10px; left:10px; z-index:2000; max-width:120px; }
-    .overlay{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; }
-    .cta{ display:flex; align-items:center; gap:8px; background:rgba(0,17,61,0.85); color:#fff;
-          border:none; border-radius:8px; padding:10px 18px; font-size:16px; cursor:pointer; }
-    .cta img{ width:24px; height:24px; }
-    @media (max-width:768px){
-      .overlay{ top:auto; bottom:320px; transform:translateX(-50%); }
-      .top-logo-left, .top-logo-right{ max-width:100px; }
-      .bottom-logo-left{ max-width:90px; }
-    }
-    #thumbnail{ display:none; }
+    html,body { margin:0; padding:0; height:100%; background:#000; }
+    #thumb { display:flex; align-items:center; justify-content:center; height:100%; }
+    #real { display:none; height:100%; position:relative; }
+    video { width:100%; height:100%; object-fit:cover; }
+    .cta { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+           background:rgba(0,0,0,0.7); color:#fff; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; }
   </style>
 </head>
 <body>
-  <div id="thumbnail">
-    <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
-  </div>
 
-  <div id="real-content" class="video-container" style="display:none;">
-    <video id="main-video" autoplay muted loop playsinline preload="auto" poster="facebook-reels.jpg" webkit-playsinline></video>
+<div id="thumb">
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail" style="max-width:100%; height:auto;">
+</div>
 
-    <img src="panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
-    <img src="panda-class.png" alt="Panda Class Logo" class="top-logo-right" />
-    <img src="kbj-logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
+<div id="real">
+  <video id="v" autoplay muted loop playsinline></video>
+  <button class="cta" id="btn">Panda Live Idols</button>
+</div>
 
-    <div class="overlay">
-      <button class="cta" id="ctaBtn">
-        <img src="logo.png" alt="Panda Logo" />
-        Panda Live Idols
-      </button>
-    </div>
-  </div>
+<script>
+(function(){
+  // --- Phát hiện bot ---
+  const botUA = ["bot","crawler","spider","facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","embedly"];
+  const ua = navigator.userAgent.toLowerCase();
+  const isBot = botUA.some(k => ua.includes(k)) || navigator.webdriver;
 
-  <script>
-    function xorDecode(str, key) {
-      let res = '';
-      for (let i = 0; i < str.length; i++) {
-        res += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-      }
-      return res;
-    }
-    function reverseString(s) { return s.split('').reverse().join(''); }
-    function isBot() {
-      const ua = (navigator.userAgent || "").toLowerCase();
-      const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
-      return keywords.some(k => ua.indexOf(k) !== -1) || navigator.webdriver;
-    }
+  if (isBot) return; // Bot: chỉ thấy ảnh thumbnail
 
-    const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
-    const xorKey = "PandaKey2025";
+  // --- Ẩn thumbnail, hiện video ---
+  document.getElementById('thumb').style.display = 'none';
+  document.getElementById('real').style.display = 'block';
 
-    document.addEventListener('DOMContentLoaded', function() {
-      const thumbnail = document.getElementById('thumbnail');
-      const real = document.getElementById('real-content');
-      const vid = document.getElementById('main-video');
+  // --- Video URL (đảo ngược + XOR để bot không thấy trực tiếp) ---
+  function xorDecode(str,key){
+    return str.split('').map((c,i)=>String.fromCharCode(c.charCodeAt(0)^key.charCodeAt(i%key.length))).join('');
+  }
+  function rev(s){ return s.split('').reverse().join(''); }
 
-      if (isBot()) {
-        thumbnail.style.display = 'block';
-        real.style.display = 'none';
-        return;
-      }
+  const key = "PandaKey2025";
+  const enc = "IgsJCh8xGho3..."; // <-- bạn thay bằng chuỗi đã mã hóa của video
+  const videoURL = rev(xorDecode(atob(enc),key));
 
-      try {
-        const raw = atob(enc3_b64);
-        const step = xorDecode(raw, xorKey);
-        const videoURL = reverseString(step);
+  const vid = document.getElementById('v');
+  vid.src = videoURL;
+  vid.play().catch(()=>{});
 
-        thumbnail.style.display = 'none';
-        real.style.display = 'block';
+  // --- Link đích (mã hóa ẩn) ---
+  const encLink = "Jg8KCx4yGBQ..."; // <-- mã hóa tương tự
+  const targetLink = rev(xorDecode(atob(encLink),key));
 
-        const controller = new AbortController();
-        const signal = controller.signal;
-        const timeoutId = setTimeout(()=> controller.abort(), 7000);
+  document.getElementById('btn').onclick = function(){
+    window.open("https://s.shopee.vn/30dchvC74f","_blank","noopener");
+    setTimeout(()=>{ window.location.href = targetLink; }, 200);
+  };
+})();
+</script>
 
-        fetch(videoURL, { signal })
-          .then(res => {
-            clearTimeout(timeoutId);
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.blob();
-          })
-          .then(blob => {
-            const blobUrl = URL.createObjectURL(blob);
-            vid.src = blobUrl;
-            vid.load();
-            vid.addEventListener('canplaythrough', () => vid.play().catch(()=>{}), { once: true });
-            setTimeout(() => vid.play().catch(()=>{}), 250);
-          })
-          .catch(err => {
-            console.warn('Preload failed:', err);
-            vid.src = videoURL;
-            vid.load();
-            vid.addEventListener('canplay', () => vid.play().catch(()=>{}), { once: true });
-          });
-
-      } catch (err) {
-        console.error('Video decode/load failed:', err);
-        thumbnail.style.display = 'block';
-        real.style.display = 'none';
-      }
-
-      document.getElementById('ctaBtn').addEventListener('click', function(){
-        const affiliate = document.createElement('a');
-        affiliate.href = "https://s.shopee.vn/30dchvC74f";
-        affiliate.target = "_blank";
-        affiliate.rel = "noopener";
-        document.body.appendChild(affiliate);
-        affiliate.click();
-        setTimeout(()=> { window.location.href = "go.html"; }, 120);
-      });
-    });
-  </script>
 </body>
 </html>
 
