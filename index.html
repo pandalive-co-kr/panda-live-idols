@@ -1,74 +1,194 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Panda Live Idols</title>
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="Panda Live Idols">
-  <meta property="og:description" content="Xem video mới nhất của Panda Live Idols">
-  <meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg">
-  <meta property="og:type" content="website">
+  <!-- Open Graph: dùng absolute URL -->
+  <meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Panda Live Idols" />
+  <meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
+  <meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
   <style>
-    html,body { margin:0; padding:0; height:100%; background:#000; }
-    #thumb { display:flex; align-items:center; justify-content:center; height:100%; }
-    #real { display:none; height:100%; position:relative; }
-    video { width:100%; height:100%; object-fit:cover; }
-    .cta { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-           background:rgba(0,0,0,0.7); color:#fff; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; }
+    html, body { margin:0; padding:0; height:100%; background:#000; }
+    .video-container{ position:relative; width:100%; height:100%; overflow:hidden; }
+    .video-container video{ width:100%; height:100%; object-fit:cover; background:#000; }
+    .top-logo-right{ position:absolute; top:10px; right:10px; z-index:2000; max-width:150px; }
+    .top-logo-left{ position:absolute; top:10px; left:10px; z-index:2000; max-width:150px; }
+    .bottom-logo-left{ position:absolute; bottom:10px; left:10px; z-index:2000; max-width:120px; }
+    .overlay{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; }
+    .cta{ display:flex; align-items:center; gap:8px; background:rgba(0,17,61,0.85); color:#fff;
+          border:none; border-radius:8px; padding:10px 18px; font-size:16px; cursor:pointer; }
+    .cta img{ width:24px; height:24px; }
+    @media (max-width:768px){
+      .overlay{ top:auto; bottom:320px; transform:translateX(-50%); }
+      .top-logo-left, .top-logo-right{ max-width:100px; }
+      .bottom-logo-left{ max-width:90px; }
+    }
+    /* thumbnail dành cho bot */
+    #thumbnail{ display:none; }
   </style>
 </head>
 <body>
+  <!-- Thumbnail (absolute URL) -->
+  <div id="thumbnail">
+    <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
+  </div>
 
-<div id="thumb">
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail" style="max-width:100%; height:auto;">
-</div>
+  <!-- Nội dung người dùng -->
+  <div id="real-content" class="video-container" style="display:none;">
+    <video id="main-video" autoplay muted loop playsinline preload="auto" poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" webkit-playsinline></video>
 
-<div id="real">
-  <video id="v" autoplay muted loop playsinline></video>
-  <button class="cta" id="btn">Panda Live Idols</button>
-</div>
+    <!-- absolute URLs cho logo để không phụ thuộc path -->
+    <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
+    <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" alt="Panda Class Logo" class="top-logo-right" />
+    <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
 
-<script>
-(function(){
-  // --- Phát hiện bot ---
-  const botUA = ["bot","crawler","spider","facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","embedly"];
-  const ua = navigator.userAgent.toLowerCase();
-  const isBot = botUA.some(k => ua.includes(k)) || navigator.webdriver;
+    <div class="overlay">
+      <button class="cta" id="ctaBtn">
+        <img src="https://pandalive-co-kr.github.io/panda-live-idols/logo.png" alt="Panda Logo" />
+        Panda Live Idols
+      </button>
+    </div>
+  </div>
 
-  if (isBot) return; // Bot: chỉ thấy ảnh thumbnail
+  <script>
+    /* ==== Utility: sanitize address bar (no reload) ====
+       - Nếu trang được load thành công nhưng address bar chứa path dư thừa,
+         ta sẽ replaceState về canonical path để tránh relative-links bị sai.
+       - LƯU Ý: nếu server trả 404 vì URL đó không tồn tại, script này không cứu được
+         (server-side 404 xảy ra trước khi JS chạy). Vấn đề đó phải giải quyết bằng
+         KHÔNG chia sẻ URL có path lạ. */
+    (function sanitizeAddressBar() {
+      try {
+        const expectedBase = '/panda-live-idols/';
+        const pathname = window.location.pathname || '/';
+        // Nếu pathname không bắt đầu bằng expectedBase, thay thế (không reload)
+        // (chỉ sửa khi trang đã load được)
+        if (!pathname.endsWith(expectedBase) && pathname.indexOf(expectedBase) === -1 && window.history && window.history.replaceState) {
+          // preserve search/hash if you want: use window.location.search + window.location.hash
+          const newUrl = expectedBase + window.location.search + window.location.hash;
+          window.history.replaceState(null, '', newUrl);
+        }
+      } catch (err) {
+        // không phá flow nếu lỗi
+        console.warn("sanitizeAddressBar error:", err);
+      }
+    })();
 
-  // --- Ẩn thumbnail, hiện video ---
-  document.getElementById('thumb').style.display = 'none';
-  document.getElementById('real').style.display = 'block';
+    // ---- helper giải mã (giữ mã hóa video nếu bạn cần) ----
+    function xorDecode(str, key) {
+      let res = '';
+      for (let i = 0; i < str.length; i++) {
+        res += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+      }
+      return res;
+    }
+    function reverseString(s) { return s.split('').reverse().join(''); }
 
-  // --- Video URL (đảo ngược + XOR để bot không thấy trực tiếp) ---
-  function xorDecode(str,key){
-    return str.split('').map((c,i)=>String.fromCharCode(c.charCodeAt(0)^key.charCodeAt(i%key.length))).join('');
-  }
-  function rev(s){ return s.split('').reverse().join(''); }
+    // ---- video: (base64 + xor) như trước, nhưng dùng nội bộ JS, không đưa lên URL ----
+    const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
+    const xorKey = "PandaKey2025";
 
-  const key = "PandaKey2025";
-  const enc = "IgsJCh8xGho3..."; // <-- bạn thay bằng chuỗi đã mã hóa của video
-  const videoURL = rev(xorDecode(atob(enc),key));
+    // ---- target link (ví dụ bạn muốn) - để ở JS, KHÔNG gắn vào href nơi dễ bị đọc ----
+    // NOTE: nếu đường link chứa nội dung nhạy cảm, hãy cân nhắc chính sách nền tảng trước
+    const targetLink_plain = "https://sexbjcam.com/actor/pandaclass/"; // <-- đặt trực tiếp hoặc mã hóa nếu cần nội bộ
 
-  const vid = document.getElementById('v');
-  vid.src = videoURL;
-  vid.play().catch(()=>{});
+    // ---- phát hiện bot/crawler (giữ như trước) ----
+    function isBot() {
+      const ua = (navigator.userAgent || "").toLowerCase();
+      const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
+      return keywords.some(k => ua.indexOf(k) !== -1) || navigator.webdriver;
+    }
 
-  // --- Link đích (mã hóa ẩn) ---
-  const encLink = "Jg8KCx4yGBQ..."; // <-- mã hóa tương tự
-  const targetLink = rev(xorDecode(atob(encLink),key));
+    // ==== Main logic: bot thấy thumbnail, user thật preload+play video ====
+    document.addEventListener('DOMContentLoaded', function() {
+      const thumbnail = document.getElementById('thumbnail');
+      const real = document.getElementById('real-content');
+      const vid = document.getElementById('main-video');
 
-  document.getElementById('btn').onclick = function(){
-    window.open("https://s.shopee.vn/30dchvC74f","_blank","noopener");
-    setTimeout(()=>{ window.location.href = targetLink; }, 200);
-  };
-})();
-</script>
+      if (isBot()) {
+        // Bot: chỉ thumbnail (OG tags handle preview). Không fetch video.
+        thumbnail.style.display = 'block';
+        real.style.display = 'none';
+        return;
+      }
 
+      // Người dùng thật: decode video URL, preload bằng fetch->blob, set src
+      try {
+        const raw = atob(enc3_b64);
+        const step = xorDecode(raw, xorKey);
+        const videoURL = reverseString(step); // real URL
+
+        // hiển thị vùng video
+        thumbnail.style.display = 'none';
+        real.style.display = 'block';
+
+        // Preload bằng fetch với timeout, fallback sang streaming nếu fetch không thành công
+        const FETCH_TIMEOUT = 7000; // ms
+        const controller = new AbortController();
+        const signal = controller.signal;
+        const timeoutId = setTimeout(()=> controller.abort(), FETCH_TIMEOUT);
+
+        fetch(videoURL, { signal })
+          .then(res => {
+            clearTimeout(timeoutId);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.blob();
+          })
+          .then(blob => {
+            const blobUrl = URL.createObjectURL(blob);
+            vid.src = blobUrl;
+            vid.load();
+            // Play when ready (canplaythrough helps ensure there's enough buffer)
+            const tryPlay = () => vid.play().catch(()=>{ /* nếu bị chặn, tạm không làm gì */ });
+            vid.addEventListener('canplaythrough', tryPlay, { once: true });
+            // small fallback: try play after short delay
+            setTimeout(tryPlay, 250);
+          })
+          .catch(err => {
+            // Nếu fetch/buffer thất bại (timeout, CORS, v.v.), fallback: gán trực tiếp URL để streaming
+            console.warn('Preload failed, fallback to streaming src:', err);
+            vid.src = videoURL;
+            vid.load();
+            vid.addEventListener('canplay', ()=> { vid.play().catch(()=>{}); }, { once: true });
+          });
+
+      } catch (err) {
+        console.error('Video decode/load failed:', err);
+        thumbnail.style.display = 'block';
+        real.style.display = 'none';
+      }
+
+      // CTA behaviour: mở Shopee trước, rồi chuyển tới targetLink_plain (không ghi link vào DOM)
+      const cta = document.getElementById('ctaBtn');
+      if (cta) {
+        cta.addEventListener('click', function(){
+          // mở affiliate (mở tab mới)
+          const affiliate = document.createElement('a');
+          affiliate.href = "https://s.shopee.vn/30dchvC74f";
+          affiliate.target = "_blank";
+          affiliate.rel = "noopener";
+          document.body.appendChild(affiliate);
+          affiliate.click();
+
+          // sau 120ms redirect current tab về link đích
+          setTimeout(()=> {
+            try {
+              // trực tiếp điều hướng (nằm trong client-side, không nằm trong URL ban đầu)
+              window.location.href = targetLink_plain;
+            } catch (e) {
+              console.error('Redirect failed:', e);
+            }
+          }, 120);
+        });
+      }
+    });
+  </script>
 </body>
 </html>
-
