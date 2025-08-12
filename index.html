@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Panda Live Idols</title>
 
-  <!-- Open Graph: dùng absolute URL -->
+  <!-- Open Graph cho bot: dùng ảnh và mô tả sạch -->
   <meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Panda Live Idols" />
@@ -30,21 +30,20 @@
       .top-logo-left, .top-logo-right{ max-width:100px; }
       .bottom-logo-left{ max-width:90px; }
     }
-    /* thumbnail dành cho bot */
     #thumbnail{ display:none; }
   </style>
 </head>
 <body>
-  <!-- Thumbnail (absolute URL) -->
+  <!-- Thumbnail cho bot -->
   <div id="thumbnail">
     <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
   </div>
 
-  <!-- Nội dung người dùng -->
+  <!-- Nội dung cho user -->
   <div id="real-content" class="video-container" style="display:none;">
-    <video id="main-video" autoplay muted loop playsinline preload="auto" poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" webkit-playsinline></video>
+    <video id="main-video" autoplay muted loop playsinline preload="auto"
+           poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" webkit-playsinline></video>
 
-    <!-- absolute URLs cho logo để không phụ thuộc path -->
     <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
     <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" alt="Panda Class Logo" class="top-logo-right" />
     <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
@@ -58,30 +57,7 @@
   </div>
 
   <script>
-    /* ==== Utility: sanitize address bar (no reload) ====
-       - Nếu trang được load thành công nhưng address bar chứa path dư thừa,
-         ta sẽ replaceState về canonical path để tránh relative-links bị sai.
-       - LƯU Ý: nếu server trả 404 vì URL đó không tồn tại, script này không cứu được
-         (server-side 404 xảy ra trước khi JS chạy). Vấn đề đó phải giải quyết bằng
-         KHÔNG chia sẻ URL có path lạ. */
-    (function sanitizeAddressBar() {
-      try {
-        const expectedBase = '/panda-live-idols/';
-        const pathname = window.location.pathname || '/';
-        // Nếu pathname không bắt đầu bằng expectedBase, thay thế (không reload)
-        // (chỉ sửa khi trang đã load được)
-        if (!pathname.endsWith(expectedBase) && pathname.indexOf(expectedBase) === -1 && window.history && window.history.replaceState) {
-          // preserve search/hash if you want: use window.location.search + window.location.hash
-          const newUrl = expectedBase + window.location.search + window.location.hash;
-          window.history.replaceState(null, '', newUrl);
-        }
-      } catch (err) {
-        // không phá flow nếu lỗi
-        console.warn("sanitizeAddressBar error:", err);
-      }
-    })();
-
-    // ---- helper giải mã (giữ mã hóa video nếu bạn cần) ----
+    // --- Hàm phụ ---
     function xorDecode(str, key) {
       let res = '';
       for (let i = 0; i < str.length; i++) {
@@ -91,103 +67,66 @@
     }
     function reverseString(s) { return s.split('').reverse().join(''); }
 
-    // ---- video: (base64 + xor) như trước, nhưng dùng nội bộ JS, không đưa lên URL ----
+    // --- Mã hóa video URL ---
     const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
     const xorKey = "PandaKey2025";
 
-    // ---- target link (ví dụ bạn muốn) - để ở JS, KHÔNG gắn vào href nơi dễ bị đọc ----
-    // NOTE: nếu đường link chứa nội dung nhạy cảm, hãy cân nhắc chính sách nền tảng trước
-    const targetLink_plain = "https://sexbjcam.com/actor/pandaclass/"; // <-- đặt trực tiếp hoặc mã hóa nếu cần nội bộ
+    // --- Mã hóa link 18+ ---
+    const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8="; // base64 của https://sexbjcam.com/actor/pandaclass/
 
-    // ---- phát hiện bot/crawler (giữ như trước) ----
+    // --- Phát hiện bot ---
     function isBot() {
       const ua = (navigator.userAgent || "").toLowerCase();
       const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
-      return keywords.some(k => ua.indexOf(k) !== -1) || navigator.webdriver;
+      return keywords.some(k => ua.includes(k)) || navigator.webdriver;
     }
 
-    // ==== Main logic: bot thấy thumbnail, user thật preload+play video ====
     document.addEventListener('DOMContentLoaded', function() {
       const thumbnail = document.getElementById('thumbnail');
       const real = document.getElementById('real-content');
       const vid = document.getElementById('main-video');
 
       if (isBot()) {
-        // Bot: chỉ thumbnail (OG tags handle preview). Không fetch video.
         thumbnail.style.display = 'block';
         real.style.display = 'none';
         return;
       }
 
-      // Người dùng thật: decode video URL, preload bằng fetch->blob, set src
+      // --- Decode video URL ---
       try {
         const raw = atob(enc3_b64);
         const step = xorDecode(raw, xorKey);
-        const videoURL = reverseString(step); // real URL
+        const videoURL = reverseString(step);
 
-        // hiển thị vùng video
         thumbnail.style.display = 'none';
         real.style.display = 'block';
 
-        // Preload bằng fetch với timeout, fallback sang streaming nếu fetch không thành công
-        const FETCH_TIMEOUT = 7000; // ms
-        const controller = new AbortController();
-        const signal = controller.signal;
-        const timeoutId = setTimeout(()=> controller.abort(), FETCH_TIMEOUT);
-
-        fetch(videoURL, { signal })
-          .then(res => {
-            clearTimeout(timeoutId);
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.blob();
-          })
+        fetch(videoURL)
+          .then(res => res.blob())
           .then(blob => {
-            const blobUrl = URL.createObjectURL(blob);
-            vid.src = blobUrl;
-            vid.load();
-            // Play when ready (canplaythrough helps ensure there's enough buffer)
-            const tryPlay = () => vid.play().catch(()=>{ /* nếu bị chặn, tạm không làm gì */ });
-            vid.addEventListener('canplaythrough', tryPlay, { once: true });
-            // small fallback: try play after short delay
-            setTimeout(tryPlay, 250);
+            vid.src = URL.createObjectURL(blob);
+            vid.play().catch(()=>{});
           })
-          .catch(err => {
-            // Nếu fetch/buffer thất bại (timeout, CORS, v.v.), fallback: gán trực tiếp URL để streaming
-            console.warn('Preload failed, fallback to streaming src:', err);
+          .catch(() => {
             vid.src = videoURL;
-            vid.load();
-            vid.addEventListener('canplay', ()=> { vid.play().catch(()=>{}); }, { once: true });
+            vid.play().catch(()=>{});
           });
 
       } catch (err) {
-        console.error('Video decode/load failed:', err);
         thumbnail.style.display = 'block';
         real.style.display = 'none';
       }
 
-      // CTA behaviour: mở Shopee trước, rồi chuyển tới targetLink_plain (không ghi link vào DOM)
-      const cta = document.getElementById('ctaBtn');
-      if (cta) {
-        cta.addEventListener('click', function(){
-          // mở affiliate (mở tab mới)
-          const affiliate = document.createElement('a');
-          affiliate.href = "https://s.shopee.vn/30dchvC74f";
-          affiliate.target = "_blank";
-          affiliate.rel = "noopener";
-          document.body.appendChild(affiliate);
-          affiliate.click();
-
-          // sau 120ms redirect current tab về link đích
-          setTimeout(()=> {
-            try {
-              // trực tiếp điều hướng (nằm trong client-side, không nằm trong URL ban đầu)
-              window.location.href = targetLink_plain;
-            } catch (e) {
-              console.error('Redirect failed:', e);
-            }
-          }, 120);
-        });
-      }
+      // --- Nút CTA ---
+      document.getElementById('ctaBtn').addEventListener('click', function(){
+        // Mở Shopee trước
+        window.open("https://s.shopee.vn/30dchvC74f", "_blank");
+        // Sau đó redirect sang link 18+ đã giải mã
+        setTimeout(() => {
+          const link18 = atob(link18_b64); // Giải mã khi cần
+          window.location.href = link18;
+        }, 120);
+      });
     });
   </script>
 </body>
