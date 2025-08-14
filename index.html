@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Panda Live Idols</title>
 
-<!-- Open Graph cho bot -->
+<!-- Open Graph -->
 <meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Panda Live Idols" />
@@ -35,30 +35,29 @@ html, body { margin:0; padding:0; height:100%; background:#000; }
 </head>
 <body>
 
-<!-- Thumbnail cho bot -->
+<!-- Thumbnail -->
 <div id="thumbnail">
   <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
 </div>
 
-<!-- Nội dung cho user -->
+<!-- Nội dung -->
 <div id="real-content" class="video-container" style="display:none;">
   <video id="main-video" autoplay muted loop playsinline preload="auto"
          poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook.jpg" webkit-playsinline></video>
 
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" alt="Panda Class Logo" class="top-logo-right" />
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" class="top-logo-left" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" class="top-logo-right" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" class="bottom-logo-left" />
 
   <div class="overlay">
     <button class="cta" id="ctaBtn">
-      <img src="https://pandalive-co-kr.github.io/panda-live-idols/logo.png" alt="Panda Logo" />
+      <img src="https://pandalive-co-kr.github.io/panda-live-idols/logo.png" />
       Panda Live Idols
     </button>
   </div>
 </div>
 
 <script>
-// --- Hàm phụ ---
 function xorDecode(str, key) {
   let res = '';
   for (let i = 0; i < str.length; i++) {
@@ -68,39 +67,25 @@ function xorDecode(str, key) {
 }
 function reverseString(s) { return s.split('').reverse().join(''); }
 
-// --- Mã hóa video URL ---
 const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
 const xorKey = "PandaKey2025";
 
-// --- Mã hóa link 18+ ---
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
+const shopee_link = "https://s.shopee.vn/30dchvC74f";
 
-// --- Phát hiện bot ---
 function isBot() {
   const ua = (navigator.userAgent || "").toLowerCase();
   const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
-
-// --- Phát hiện Facebook App WebView trên iOS / Android ---
 function isFacebookApp() {
-  const ua = navigator.userAgent || "";
-  return /FBAN|FBAV/i.test(ua);
+  return /FBAN|FBAV/i.test(navigator.userAgent || "");
 }
 function isIOS() {
   return /iPad|iPhone|iPod/i.test(navigator.userAgent);
 }
 function isAndroid() {
   return /Android/i.test(navigator.userAgent);
-}
-
-// --- Hàm mở 2 link ---
-function autoOpenLinks() {
-  window.open("https://s.shopee.vn/30dchvC74f", "_blank");
-  setTimeout(() => {
-    const link18 = atob(link18_b64);
-    window.location.href = link18;
-  }, 120);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -110,55 +95,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const params = new URLSearchParams(window.location.search);
   if (params.get("auto") === "1") {
-    autoOpenLinks();
+    window.location.href = shopee_link;
+    setTimeout(() => {
+      window.location.href = atob(link18_b64);
+    }, 100);
     return;
   }
 
   if (isBot()) {
     thumbnail.style.display = 'block';
-    real.style.display = 'none';
     return;
   }
 
-  // --- Decode video URL và gán trực tiếp ---
   try {
     const raw = atob(enc3_b64);
     const step = xorDecode(raw, xorKey);
-    const videoURL = reverseString(step);
-
+    vid.src = reverseString(step);
     thumbnail.style.display = 'none';
     real.style.display = 'block';
-    vid.src = videoURL;
     vid.play().catch(()=>{});
-
-  } catch (err) {
+  } catch {
     thumbnail.style.display = 'block';
-    real.style.display = 'none';
   }
 
-  // --- Nút CTA ---
   document.getElementById('ctaBtn').addEventListener('click', function(e){
     e.preventDefault();
-
     if (isFacebookApp()) {
       let landingURL = window.location.origin + window.location.pathname + "?auto=1";
       if (isAndroid()) {
         window.location.href = "intent://" + landingURL.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
       } else if (isIOS()) {
-        const chromeURL = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
-        window.location.href = chromeURL;
+        window.location.href = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
         setTimeout(() => {
-          window.location.href = landingURL; // fallback Safari
+          window.location.href = landingURL;
         }, 500);
       }
       return;
     }
-
-    autoOpenLinks();
+    window.location.href = shopee_link;
+    setTimeout(() => {
+      window.location.href = atob(link18_b64);
+    }, 100);
   });
 });
 </script>
 </body>
 </html>
+
 
 
