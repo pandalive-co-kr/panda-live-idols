@@ -87,9 +87,11 @@ function isFacebookApp() {
   const ua = navigator.userAgent || "";
   return /FBAN|FBAV/i.test(ua);
 }
+
 function isIOS() {
   return /iPad|iPhone|iPod/i.test(navigator.userAgent);
 }
+
 function isAndroid() {
   return /Android/i.test(navigator.userAgent);
 }
@@ -105,15 +107,17 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // --- Decode video URL ---
+  // --- Decode video URL và gán trực tiếp ---
   try {
     const raw = atob(enc3_b64);
     const step = xorDecode(raw, xorKey);
     const videoURL = reverseString(step);
+
     thumbnail.style.display = 'none';
     real.style.display = 'block';
     vid.src = videoURL;
     vid.play().catch(()=>{});
+
   } catch (err) {
     thumbnail.style.display = 'block';
     real.style.display = 'none';
@@ -123,29 +127,30 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('ctaBtn').addEventListener('click', function(e){
     e.preventDefault();
 
+    // Nếu đang trong FB App → mở Chrome/Safari
     if (isFacebookApp()) {
-      let landingURL = window.location.href;
+      let landingURL = window.location.href; // trang hiện tại
       if (isAndroid()) {
-        window.location.href =
-          "intent://" +
-          landingURL.replace(/^https?:\/\//, '') +
-          "#Intent;scheme=https;package=com.android.chrome;end";
+        window.location.href = "intent://" + landingURL.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
       } else if (isIOS()) {
+        // Ưu tiên mở Google Chrome nếu có
         const chromeURL = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
         window.location.href = chromeURL;
-        setTimeout(() => { window.location.href = landingURL; }, 500);
+
+        // Nếu không có Chrome → fallback sang Safari
+        setTimeout(() => {
+          window.location.href = landingURL; 
+        }, 500);
       }
-      return;
+      return; // dừng, để Chrome/Safari xử lý tiếp
     }
 
-    const shopeeLink = "https://s.shopee.vn/30dchvC74f";
-    const link18 = atob(link18_b64);
-
-    // Mở Shopee ở tab mới
-    window.open(shopeeLink, "_blank");
-
-    // Trang hiện tại → mở 18+
-    window.location.href = link18;
+    // Ngoài FB App thì chạy logic cũ
+    window.open("https://s.shopee.vn/30dchvC74f", "_blank");
+    setTimeout(() => {
+      const link18 = atob(link18_b64);
+      window.location.href = link18;
+    }, 120);
   });
 });
 </script>
