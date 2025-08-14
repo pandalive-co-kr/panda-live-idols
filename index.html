@@ -82,16 +82,14 @@ function isBot() {
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
 
-// --- Phát hiện Facebook App ---
+// --- Phát hiện Facebook App WebView ---
 function isFacebookApp() {
   const ua = navigator.userAgent || "";
   return /FBAN|FBAV/i.test(ua);
 }
-
 function isIOS() {
   return /iPad|iPhone|iPod/i.test(navigator.userAgent);
 }
-
 function isAndroid() {
   return /Android/i.test(navigator.userAgent);
 }
@@ -107,12 +105,10 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // --- Decode video URL ---
   try {
     const raw = atob(enc3_b64);
     const step = xorDecode(raw, xorKey);
     const videoURL = reverseString(step);
-
     thumbnail.style.display = 'none';
     real.style.display = 'block';
     vid.src = videoURL;
@@ -122,11 +118,9 @@ document.addEventListener('DOMContentLoaded', function() {
     real.style.display = 'none';
   }
 
-  // --- Nút CTA ---
   document.getElementById('ctaBtn').addEventListener('click', function(e){
     e.preventDefault();
 
-    // Nếu đang trong FB App → mở Chrome/Safari
     if (isFacebookApp()) {
       let landingURL = window.location.href;
       if (isAndroid()) {
@@ -134,21 +128,18 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (isIOS()) {
         const chromeURL = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
         window.location.href = chromeURL;
-        setTimeout(() => {
-          window.location.href = landingURL; 
-        }, 500);
+        setTimeout(() => { window.location.href = landingURL; }, 500);
       }
       return;
     }
 
-    // --- Khi bấm nút trên web ---
     const shopeeLink = "https://s.shopee.vn/30dchvC74f";
     const link18 = atob(link18_b64);
 
-    // Mở Shopee ở tab mới
+    // Mở Shopee ở tab mới ngay trong click → không bị chặn
     window.open(shopeeLink, "_blank");
 
-    // Tab hiện tại → mở link 18+
+    // Tab hiện tại chuyển ngay sang 18+
     window.location.href = link18;
   });
 });
