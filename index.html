@@ -82,35 +82,7 @@ function isBot() {
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
 
-// --- Phát hiện WebView FB/Zalo/TikTok ---
-function isInAppBrowser() {
-  const ua = navigator.userAgent || "";
-  return (
-    ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || // Facebook
-    ua.includes("Line/") || ua.includes("Instagram") || 
-    ua.includes("Zalo") || ua.includes("TikTok")
-  );
-}
-
-// --- Thoát khỏi WebView: mở lại trang bằng Chrome/Safari ---
-function forceOpenInBrowser() {
-  const url = window.location.href;
-  // Trên iOS dùng "open in Safari" trick
-  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    window.location.href = "x-web-search://?" + encodeURIComponent(url);
-  } else {
-    // Android: dùng intent mở Chrome
-    window.location.href = "intent://" + url.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
-  }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-  if (isInAppBrowser()) {
-    // Nếu đang mở trong FB/Zalo thì ép ra ngoài
-    setTimeout(forceOpenInBrowser, 500);
-    return;
-  }
-
   const thumbnail = document.getElementById('thumbnail');
   const real = document.getElementById('real-content');
   const vid = document.getElementById('main-video');
