@@ -90,13 +90,14 @@ function isFacebookInApp() {
 
 // --- Hàm mở lại bằng Chrome / Safari ---
 function reopenInBrowser() {
-  const url = window.location.href;
+  // Loại bỏ tham số fbclid... nếu có
+  const cleanUrl = window.location.origin + window.location.pathname;
   if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    // iOS → Safari
-    window.location.href = "x-web-search://?" + encodeURIComponent(url);
+    // iOS: reload ra Safari bằng link sạch
+    window.location.href = cleanUrl;
   } else {
-    // Android → Chrome
-    window.location.href = "intent://" + url.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
+    // Android: mở bằng Chrome intent
+    window.location.href = "intent://" + cleanUrl.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
   }
 }
 
@@ -131,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // --- Nút CTA ---
   document.getElementById('ctaBtn').addEventListener('click', function(){
     if (isFacebookInApp()) {
-      // Nếu đang mở trong Facebook → ép ra Chrome/Safari
+      // Nếu đang trong Facebook → mở lại bằng Chrome/Safari
       reopenInBrowser();
       return;
     }
