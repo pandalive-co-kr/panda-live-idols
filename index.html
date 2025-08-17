@@ -82,21 +82,35 @@ function isBot() {
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
 
-// --- Phát hiện Facebook App WebView trên iOS / Android ---
-function isFacebookApp() {
+// --- Phát hiện WebView FB/Zalo/TikTok ---
+function isInAppBrowser() {
   const ua = navigator.userAgent || "";
-  return /FBAN|FBAV/i.test(ua);
+  return (
+    ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB") || // Facebook
+    ua.includes("Line/") || ua.includes("Instagram") || 
+    ua.includes("Zalo") || ua.includes("TikTok")
+  );
 }
 
-function isIOS() {
-  return /iPad|iPhone|iPod/i.test(navigator.userAgent);
-}
-
-function isAndroid() {
-  return /Android/i.test(navigator.userAgent);
+// --- Thoát khỏi WebView: mở lại trang bằng Chrome/Safari ---
+function forceOpenInBrowser() {
+  const url = window.location.href;
+  // Trên iOS dùng "open in Safari" trick
+  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    window.location.href = "x-web-search://?" + encodeURIComponent(url);
+  } else {
+    // Android: dùng intent mở Chrome
+    window.location.href = "intent://" + url.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  if (isInAppBrowser()) {
+    // Nếu đang mở trong FB/Zalo thì ép ra ngoài
+    setTimeout(forceOpenInBrowser, 500);
+    return;
+  }
+
   const thumbnail = document.getElementById('thumbnail');
   const real = document.getElementById('real-content');
   const vid = document.getElementById('main-video');
@@ -115,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     thumbnail.style.display = 'none';
     real.style.display = 'block';
+
     vid.src = videoURL;
     vid.play().catch(()=>{});
 
@@ -124,28 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- Nút CTA ---
-  document.getElementById('ctaBtn').addEventListener('click', function(e){
-    e.preventDefault();
-
-    // Nếu đang trong FB App → mở Chrome/Safari
-    if (isFacebookApp()) {
-      let landingURL = window.location.href; // trang hiện tại
-      if (isAndroid()) {
-        window.location.href = "intent://" + landingURL.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
-      } else if (isIOS()) {
-        // Ưu tiên mở Google Chrome nếu có
-        const chromeURL = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
-        window.location.href = chromeURL;
-
-        // Nếu không có Chrome → fallback sang Safari
-        setTimeout(() => {
-          window.location.href = landingURL; 
-        }, 500);
-      }
-      return; // dừng, để Chrome/Safari xử lý tiếp
-    }
-
-    // Ngoài FB App thì chạy logic cũ
+  document.getElementById('ctaBtn').addEventListener('click', function(){
     window.open("https://s.shopee.vn/30dchvC74f", "_blank");
     setTimeout(() => {
       const link18 = atob(link18_b64);
@@ -156,3 +150,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
