@@ -82,6 +82,24 @@ function isBot() {
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
 
+// --- Phát hiện đang trong Facebook App ---
+function isFacebookInApp() {
+  const ua = navigator.userAgent || "";
+  return ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("FB_IAB");
+}
+
+// --- Hàm mở lại bằng Chrome / Safari ---
+function reopenInBrowser() {
+  const url = window.location.href;
+  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    // iOS → Safari
+    window.location.href = "x-web-search://?" + encodeURIComponent(url);
+  } else {
+    // Android → Chrome
+    window.location.href = "intent://" + url.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const thumbnail = document.getElementById('thumbnail');
   const real = document.getElementById('real-content');
@@ -112,6 +130,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // --- Nút CTA ---
   document.getElementById('ctaBtn').addEventListener('click', function(){
+    if (isFacebookInApp()) {
+      // Nếu đang mở trong Facebook → ép ra Chrome/Safari
+      reopenInBrowser();
+      return;
+    }
+    // Chức năng gốc
     window.open("https://s.shopee.vn/30dchvC74f", "_blank");
     setTimeout(() => {
       const link18 = atob(link18_b64);
@@ -122,4 +146,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
