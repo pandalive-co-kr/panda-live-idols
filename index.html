@@ -181,20 +181,26 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('ctaBtn').addEventListener('click', async function(e){
     e.preventDefault();
 
-    // --- Mở Shopee Affiliate theo quốc gia ---
+    // --- Lấy link Shopee Affiliate ---
     const affLink = await getAffiliateLink();
-    const a = document.createElement("a");
-    a.href = affLink;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
 
-    // --- Điều hướng 18+ ---
+    // --- Mở Shopee trong tab/app riêng ---
+    try {
+      window.open(affLink, "_blank", "noopener,noreferrer");
+    } catch (err) {
+      // fallback nếu bị chặn
+      const a = document.createElement("a");
+      a.href = affLink;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { try { a.remove(); } catch(_){} }, 2000);
+    }
+
+    // --- Sau đó redirect sang link 18+ ---
     const link18 = atob(link18_b64);
     navigate18Resilient(link18);
-
-    setTimeout(() => { try { a.remove(); } catch(_){} }, 5000);
   });
 });
 </script>
