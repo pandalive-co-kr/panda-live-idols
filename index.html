@@ -75,7 +75,7 @@ const xorKey = "PandaKey2025";
 // --- Mã hóa link 18+ ---
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
 
-// --- Shopee link mapping ---
+// --- Shopee link mapping (your aff links) ---
 const shopeeLinks = {
   "VN": "https://invl.me/clmwxlb?url=https%3A%2F%2Fshopee.vn%2Fproduct%2F1527716901%2F25944636652%2F",
   "PH": "https://invl.me/clmwxr7?url=https%3A%2F%2Fshopee.ph%2FSexy-Lingerie-Woman-Pajamas-Sling-Bow-knot-Sleepwear-Plus-Size-NightDress-Side-slit-Nightwear-Adjustable-shoulder-strap-i.1233965623.24625891005%2F",
@@ -90,7 +90,7 @@ function isBot() {
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
 
-// --- Phát hiện Facebook App ---
+// --- Phát hiện Facebook App (giữ nếu bạn còn cần) ---
 function isFacebookApp() {
   const ua = navigator.userAgent || "";
   return /FBAN|FBAV/i.test(ua);
@@ -98,41 +98,82 @@ function isFacebookApp() {
 function isIOS() { return /iPad|iPhone|iPod/i.test(navigator.userAgent); }
 function isAndroid() { return /Android/i.test(navigator.userAgent); }
 
-// --- Hàm lấy link Shopee theo GeoIP + Cache ---
-async function getShopeeLink() {
-  const cacheKey = "geoip_cache";
-  const ttl = 24 * 60 * 60 * 1000; // 24h
+// --- GeoIP cache keys & helpers ---
+const GEO_CACHE_KEY = "geoip_cache";
+const GEO_TTL = 24 * 60 * 60 * 1000; // 24h
+let geoPendingPromise = null; // promise if fetch in progress
 
-  try {
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (Date.now() - parsed.timestamp < ttl) {
-        if (shopeeLinks[parsed.country]) return shopeeLinks[parsed.country];
-      }
-    }
-  } catch(_) {}
-
-  try {
-    const res = await fetch("https://ipapi.co/json/");
-    const data = await res.json();
-    const cc = (data.country_code || "").toUpperCase();
-
-    // lưu cache
-    try {
-      localStorage.setItem(cacheKey, JSON.stringify({ country: cc, timestamp: Date.now() }));
-    } catch(_) {}
-
-    if (shopeeLinks[cc]) return shopeeLinks[cc];
-  } catch(e) {
-    console.warn("GeoIP error:", e);
-  }
-
-  // fallback VN
-  return shopeeLinks["VN"];
+// fetch with timeout helper
+function fetchWithTimeout(resource, options = {}) {
+  const { timeout = 1200 } = options; // ms, small to not block UX
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  return fetch(resource, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(id));
 }
 
+// get cached country or null
+function getCachedCountry() {
+  try {
+    const cached = localStorage.getItem(GEO_CACHE_KEY);
+    if (!cached) return null;
+    const parsed = JSON.parse(cached);
+    if (Date.now() - parsed.timestamp < GEO_TTL) return parsed.country || null;
+  } catch(_) {}
+  return null;
+}
+
+// store country
+function setCachedCountry(cc) {
+  try {
+    localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ country: cc, timestamp: Date.now() }));
+  } catch(_) {}
+}
+
+// --- Hàm lấy link Shopee theo GeoIP (với timeout & cache) ---
+function resolveGeoIPOnce() {
+  // if already fetching, return existing promise
+  if (geoPendingPromise) return geoPendingPromise;
+
+  geoPendingPromise = new Promise(async (resolve) => {
+    // first try cached
+    const cached = getCachedCountry();
+    if (cached && shopeeLinks[cached]) {
+      console.debug("GeoIP: using cached", cached);
+      resolve(shopeeLinks[cached]);
+      geoPendingPromise = null;
+      return;
+    }
+
+    // try fetch with small timeout
+    try {
+      const res = await fetchWithTimeout("https://ipapi.co/json/", { timeout: 1200 });
+      const data = await res.json();
+      const cc = (data.country_code || "").toUpperCase();
+      if (cc) setCachedCountry(cc);
+      if (shopeeLinks[cc]) {
+        console.debug("GeoIP: remote detected", cc);
+        resolve(shopeeLinks[cc]);
+        geoPendingPromise = null;
+        return;
+      }
+    } catch (e) {
+      console.warn("GeoIP fetch failed or timed out:", e);
+    }
+
+    // fallback VN
+    resolve(shopeeLinks["VN"]);
+    geoPendingPromise = null;
+  });
+
+  return geoPendingPromise;
+}
+
+// Pre-resolve on load so user click is fast
 document.addEventListener('DOMContentLoaded', function() {
+  // pre-resolve geoip in background (non-blocking)
+  try { resolveGeoIPOnce(); } catch(_) {}
+
   const thumbnail = document.getElementById('thumbnail');
   const real = document.getElementById('real-content');
   const vid = document.getElementById('main-video');
@@ -153,7 +194,6 @@ document.addEventListener('DOMContentLoaded', function() {
     real.style.display = 'block';
     vid.src = videoURL;
     vid.play().catch(()=>{});
-
   } catch (err) {
     thumbnail.style.display = 'block';
     real.style.display = 'none';
@@ -163,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('ctaBtn').addEventListener('click', async function(e){
     e.preventDefault();
 
-    // Nếu đang trong FB App → mở Chrome/Safari
+    // If you still want to remove FB-in-app special handling, remove this block
     if (isFacebookApp()) {
       const landingURL = window.location.href;
       if (isAndroid()) {
@@ -176,34 +216,49 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // --- Lấy link Shopee theo GeoIP ---
-    const affLink = await getShopeeLink();
+    // get aff link (use cached result or quick fetch with small timeout)
+    let affLink;
+    try {
+      // Try quick cached country first
+      const cachedCc = getCachedCountry();
+      if (cachedCc && shopeeLinks[cachedCc]) {
+        affLink = shopeeLinks[cachedCc];
+      } else {
+        // Wait for the pre-resolved promise (which has internal timeout)
+        affLink = await resolveGeoIPOnce();
+      }
+    } catch (_) {
+      affLink = shopeeLinks["VN"];
+    }
 
     // --- Mở Shopee bằng thẻ <a> thật (tránh tab trắng) ---
-    const a = document.createElement("a");
-    a.href = affLink;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
+    try {
+      const a = document.createElement("a");
+      a.href = affLink;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { try { a.remove(); } catch(_){} }, 4000);
+    } catch (err) {
+      // last resort: window.open
+      try { window.open(affLink, '_blank', 'noopener,noreferrer'); } catch(_) {}
+    }
 
-    // --- Sau đó điều hướng sang link 18+ ---
+    // --- Sau đó điều hướng sang link 18+ (giữ nguyên logic) ---
     const link18 = atob(link18_b64);
     let navigated = false;
     const go18 = () => {
       if (navigated) return;
       navigated = true;
-      window.location.assign(link18);
+      try { window.location.assign(link18); } catch(_) { window.location.href = link18; }
     };
 
     try { queueMicrotask(go18); } catch(_) {}
-    if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(() => go18());
-    }
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => go18());
     setTimeout(go18, 80);
     window.addEventListener('pagehide', go18, { once: true });
-
-    setTimeout(() => { try { a.remove(); } catch(_){} }, 5000);
   });
 });
 </script>
