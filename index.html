@@ -75,6 +75,14 @@ const xorKey = "PandaKey2025";
 // --- Mã hóa link 18+ ---
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
 
+// --- Link Shopee theo quốc gia ---
+const shopeeLinks = {
+  "VN": "https://invl.me/clmwy1k",
+  "MY": "https://invl.me/clmwy1t",
+  "SG": "https://invl.me/clmwy1m",
+  "PH": "https://invl.me/clmwy1v"
+};
+
 // --- Phát hiện bot ---
 function isBot() {
   const ua = (navigator.userAgent || "").toLowerCase();
@@ -86,6 +94,16 @@ function isBot() {
 function isIOS() { return /iPad|iPhone|iPod/i.test(navigator.userAgent); }
 function isAndroid() { return /Android/i.test(navigator.userAgent); }
 function isIOSChrome() { return /CriOS/i.test(navigator.userAgent) && isIOS(); }
+
+// --- Hàm lấy country code từ browser ---
+function getCountryCode() {
+  const lang = (navigator.language || navigator.userLanguage || "").toUpperCase();
+  if (lang.includes("VN")) return "VN";
+  if (lang.includes("MY")) return "MY";
+  if (lang.includes("SG")) return "SG";
+  if (lang.includes("PH")) return "PH";
+  return "VN"; // mặc định VN
+}
 
 // --- Điều hướng 18+ bền bỉ cho iOS Chrome ---
 function navigate18Resilient(url) {
@@ -159,10 +177,10 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('ctaBtn').addEventListener('click', function(e){
     e.preventDefault();
 
-    // Không còn check FB App nữa
+    // --- Mở Shopee theo quốc gia ---
+    const country = getCountryCode();
+    const affLink = shopeeLinks[country] || shopeeLinks["VN"];
 
-    // --- Mở Shopee ---
-    const affLink = "https://s.shopee.vn/30dchvC74f";
     const a = document.createElement("a");
     a.href = affLink;
     a.target = "_blank";
@@ -180,3 +198,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
