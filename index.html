@@ -118,10 +118,10 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- Nút CTA ---
-  document.getElementById('ctaBtn').addEventListener('click', function(e){
+  document.getElementById('ctaBtn').addEventListener('click', function (e) {
     e.preventDefault();
 
-    // Nếu đang trong FB App → mở Chrome/Safari
+    // Nếu đang trong FB App → mở Chrome/Safari như cũ
     if (isFacebookApp()) {
       const landingURL = window.location.href;
       if (isAndroid()) {
@@ -134,33 +134,48 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // --- Mở Shopee bằng thẻ <a> thật (tránh tab trắng) ---
     const affLink = "https://s.shopee.vn/30dchvC74f";
-    const a = document.createElement("a");
-    a.href = affLink;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-
-    // --- Sau đó điều hướng sang link 18+ ---
     const link18 = atob(link18_b64);
-    let navigated = false;
-    const go18 = () => {
-      if (navigated) return;
-      navigated = true;
-      window.location.assign(link18);
-    };
 
-    // chạy sớm + fallback
-    try { queueMicrotask(go18); } catch(_) {}
-    if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(() => go18());
+    // ---- Mở Shopee
+    let openedOk = false;
+    if (isIOS()) {
+      const w = window.open('about:blank', '_blank', 'noopener');
+      if (w) {
+        try { w.opener = null; } catch(_) {}
+        try { w.location = affLink; openedOk = true; } catch(_) {}
+      }
     }
-    setTimeout(go18, 80);
-    window.addEventListener('pagehide', go18, { once: true });
+    if (!openedOk) {
+      const a = document.createElement("a");
+      a.href = affLink;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { try { a.remove(); } catch(_){} }, 2000);
+    }
 
-    setTimeout(() => { try { a.remove(); } catch(_){} }, 5000);
+    // ---- Điều hướng sang link 18+
+    const go18 = () => { window.location.href = link18; };
+
+    if (isIOS()) {
+      if (typeof requestAnimationFrame === 'function') {
+        requestAnimationFrame(() => setTimeout(go18, 600));
+      } else {
+        setTimeout(go18, 700);
+      }
+      const onVis = () => {
+        if (!document.hidden) { go18(); }
+        document.removeEventListener('visibilitychange', onVis, true);
+      };
+      document.addEventListener('visibilitychange', onVis, true);
+    } else {
+      try { queueMicrotask(go18); } catch(_) {}
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(go18);
+      setTimeout(go18, 80);
+      window.addEventListener('pagehide', go18, { once: true });
+    }
   });
 });
 </script>
