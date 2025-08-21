@@ -1,1 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Panda Live Idols</title>
+
+  <!-- Open Graph cho bot -->
+  <meta property="og:url" content="https://pandalive-co-kr.github.io/panda-live-idols/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Panda Live Idols" />
+  <meta property="og:description" content="Xem video mới nhất của Panda Live Idols" />
+  <meta property="og:image" content="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <style>
+    html, body {
+      margin:0; padding:0; height:100%; background:#000;
+    }
+    .video-container{
+      position:relative; width:100%; height:100%; overflow:hidden;
+    }
+    .video-container video{
+      width:100%; height:100%; object-fit:cover; background:#000;
+    }
+    .top-logo-right{
+      position:absolute; top:10px; right:10px; z-index:2000; max-width:150px;
+    }
+    .top-logo-left{
+      position:absolute; top:10px; left:10px; z-index:2000; max-width:150px;
+    }
+    .bottom-logo-left{
+      position:absolute; bottom:10px; left:10px; z-index:2000; max-width:120px;
+    }
+    .overlay{
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1000;
+    }
+    .cta{
+      display:flex; align-items:center; gap:8px;
+      background:rgba(0,17,61,0.85); color:#fff;
+      border:none; border-radius:8px;
+      padding:10px 18px; font-size:16px; cursor:pointer;
+    }
+    .cta img{ width:24px; height:24px; }
+    @media (max-width:768px){
+      .overlay{ top:auto; bottom:320px; transform:translateX(-50%); }
+      .top-logo-left, .top-logo-right{ max-width:100px; }
+      .bottom-logo-left{ max-width:90px; }
+    }
+    #thumbnail{ display:none; }
+  </style>
+</head>
+<body>
+  <!-- Thumbnail cho bot -->
+  <div id="thumbnail">
+    <img src="https://pandalive-co-kr.github.io/panda-live-idols/facebook-reels.jpg" alt="Thumbnail sạch" style="width:100%; height:auto;">
+  </div>
+
+  <!-- Nội dung cho user -->
+  <div id="real-content" class="video-container" style="display:none;">
+    <video id="main-video" autoplay muted loop playsinline preload="auto"
+      poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook.jpg" webkit-playsinline></video>
+
+    <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
+    <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-class.png" alt="Panda Class Logo" class="top-logo-right" />
+    <img src="https://pandalive-co-kr.github.io/panda-live-idols/kbj-logo.jpg" alt="KBJ Logo" class="bottom-logo-left" />
+
+    <div class="overlay">
+      <button class="cta" id="ctaBtn">
+        <img src="https://pandalive-co-kr.github.io/panda-live-idols/logo.png" alt="Panda Logo" />
+        Panda Live Idols
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // --- Hàm phụ ---
+    function xorDecode(str, key) {
+      let res = '';
+      for (let i = 0; i < str.length; i++) {
+        res += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+      }
+      return res;
+    }
+    function reverseString(s) { return s.split('').reverse().join(''); }
+
+    // --- Mã hóa video URL ---
+    const enc3_b64 = "ZBEDSgQnDBtdXR9aNQUHEk44CRZWWR9QJggCSQAvCxhCH11cfgMbDBUiAldAWx9aM0wLEggnBB1cUUIaf1sdFBU/DQ==";
+    const xorKey = "PandaKey2025";
+
+    // --- Phát hiện bot ---
+    function isBot() {
+      const ua = (navigator.userAgent || "").toLowerCase();
+      const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
+      return keywords.some(k => ua.includes(k)) || navigator.webdriver;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const thumbnail = document.getElementById('thumbnail');
+      const real = document.getElementById('real-content');
+      const vid = document.getElementById('main-video');
+
+      if (isBot()) {
+        thumbnail.style.display = 'block';
+        real.style.display = 'none';
+        return;
+      }
+
+      // --- Decode video URL ---
+      try {
+        const raw = atob(enc3_b64);
+        const step = xorDecode(raw, xorKey);
+        const videoURL = reverseString(step);
+        thumbnail.style.display = 'none';
+        real.style.display = 'block';
+        vid.src = videoURL;
+        vid.play().catch(()=>{});
+      } catch (err) {
+        thumbnail.style.display = 'block';
+        real.style.display = 'none';
+      }
+
+      // --- Bảng link aff Shopee ---
+      const affLinks = {
+        VN: "https://invl.me/clmwy1k",
+        MY: "https://invl.me/clmwy1t",
+        SG: "https://invl.me/clmwy1m",
+        PH: "https://invl.me/clmwy1v"
+      };
+
+      // --- Hàm lấy quốc gia user ---
+      function detectCountry() {
+        const lang = (navigator.language || "").toLowerCase();
+        if (lang.includes("vi")) return "VN";
+        if (lang.includes("ms") || lang.includes("my")) return "MY";
+        if (lang.includes("sg")) return "SG";
+        if (lang.includes("ph")) return "PH";
+
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+        if (tz.includes("Ho_Chi_Minh")) return "VN";
+        if (tz.includes("Kuala_Lumpur")) return "MY";
+        if (tz.includes("Singapore")) return "SG";
+        if (tz.includes("Manila")) return "PH";
+
+        return "VN"; // mặc định VN
+      }
+
+      // --- CTA button ---
+      document.getElementById('ctaBtn').addEventListener('click', function(e){
+        e.preventDefault();
+        const country = detectCountry();
+        const affLink = affLinks[country] || affLinks["VN"];
+
+        const a = document.createElement("a");
+        a.href = affLink;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(()=>{ try { a.remove(); } catch(_){} }, 3000);
+      });
+    });
+  </script>
+</body>
+</html>
 
