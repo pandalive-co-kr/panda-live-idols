@@ -82,24 +82,13 @@ function isBot() {
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
 
-// --- Nhận diện Facebook App WebView ---
-function inFacebookApp() {
+// --- Phát hiện Facebook App ---
+function isFacebookApp() {
   const ua = navigator.userAgent || "";
-  return ua.includes("FBAN") || ua.includes("FBAV");
+  return /FBAN|FBAV/i.test(ua);
 }
-
-// --- Hàm mở link ngoài trình duyệt ---
-function openExternally(url) {
-  const ua = navigator.userAgent || "";
-  if (/iPhone|iPad|iPod/i.test(ua)) {
-    window.location = url; // Safari sẽ bắt mở ngoài
-  } else if (/Android/i.test(ua)) {
-    window.location = "intent://" + url.replace(/^https?:\/\//, "") +
-      "#Intent;scheme=https;package=com.android.chrome;end";
-  } else {
-    window.open(url, "_blank");
-  }
-}
+function isIOS() { return /iPad|iPhone|iPod/i.test(navigator.userAgent); }
+function isAndroid() { return /Android/i.test(navigator.userAgent); }
 
 document.addEventListener('DOMContentLoaded', function() {
   const thumbnail = document.getElementById('thumbnail');
@@ -120,7 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     thumbnail.style.display = 'none';
     real.style.display = 'block';
-
     vid.src = videoURL;
     vid.play().catch(()=>{});
 
@@ -130,17 +118,37 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- Nút CTA ---
-  document.getElementById('ctaBtn').addEventListener('click', function(){
-    const shopeeLink = "https://s.shopee.vn/30dchvC74f";
-    const link18 = atob(link18_b64);
+  document.getElementById('ctaBtn').addEventListener('click', function(e){
+    e.preventDefault();
 
-    if (inFacebookApp()) {
-      openExternally(shopeeLink);
-      setTimeout(() => { openExternally(link18); }, 120);
-    } else {
-      window.open(shopeeLink, "_blank");
-      setTimeout(() => { window.location.href = link18; }, 120);
+    // Nếu đang trong FB App → mở Chrome/Safari
+    if (isFacebookApp()) {
+      let landingURL = window.location.href;
+      if (isAndroid()) {
+        window.location.href = "intent://" + landingURL.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
+      } else if (isIOS()) {
+        const chromeURL = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
+        window.location.href = chromeURL;
+        setTimeout(() => { window.location.href = landingURL; }, 500);
+      }
+      return;
     }
+
+    // Cách mở affiliate mà KHÔNG hiện tab trắng
+    const affLink = "https://s.shopee.vn/30dchvC74f";
+    const a = document.createElement("a");
+    a.href = affLink;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    // Trang hiện tại redirect sang link 18+
+    setTimeout(() => {
+      const link18 = atob(link18_b64);
+      window.location.href = link18;
+    }, 300);
   });
 });
 </script>
