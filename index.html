@@ -130,6 +130,28 @@ function navigate18Resilient(url) {
   document.addEventListener('visibilitychange', onVisibleChange);
 }
 
+// --- Affiliate Links ---
+const affLinks = {
+  "VN": "https://s.shopee.vn/30dchvC74f",
+  "MY": "https://invl.me/clmwy1t",
+  "SG": "https://invl.me/clmwy1m",
+  "PH": "https://invl.me/clmwy1v"
+};
+// Default tối ưu = VN
+const defaultAff = affLinks["VN"];
+
+// --- Hàm lấy affiliate theo quốc gia ---
+async function getAffiliateLink() {
+  try {
+    const resp = await fetch("https://ipapi.co/json/");
+    const data = await resp.json();
+    const country = (data.country || "").toUpperCase();
+    return affLinks[country] || defaultAff;
+  } catch (e) {
+    return defaultAff;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const thumbnail = document.getElementById('thumbnail');
   const real = document.getElementById('real-content');
@@ -156,13 +178,11 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- Nút CTA ---
-  document.getElementById('ctaBtn').addEventListener('click', function(e){
+  document.getElementById('ctaBtn').addEventListener('click', async function(e){
     e.preventDefault();
 
-    // Không còn check FB App nữa
-
-    // --- Mở Shopee ---
-    const affLink = "https://s.shopee.com.my/5L1u13Ar7x";
+    // --- Mở Shopee Affiliate theo quốc gia ---
+    const affLink = await getAffiliateLink();
     const a = document.createElement("a");
     a.href = affLink;
     a.target = "_blank";
