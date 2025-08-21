@@ -82,11 +82,7 @@ function isBot() {
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
 
-// --- Phát hiện Facebook App ---
-function isFacebookApp() {
-  const ua = navigator.userAgent || "";
-  return /FBAN|FBAV/i.test(ua);
-}
+// --- Phát hiện thiết bị ---
 function isIOS() { return /iPad|iPhone|iPod/i.test(navigator.userAgent); }
 function isAndroid() { return /Android/i.test(navigator.userAgent); }
 function isIOSChrome() { return /CriOS/i.test(navigator.userAgent) && isIOS(); }
@@ -94,13 +90,11 @@ function isIOSChrome() { return /CriOS/i.test(navigator.userAgent) && isIOS(); }
 // --- Điều hướng 18+ bền bỉ cho iOS Chrome ---
 function navigate18Resilient(url) {
   let done = false;
-  // giữ id để clear khi đã điều hướng xong
   let t1 = null, t2 = null, t3 = null;
 
   const go = () => {
     if (done) return;
     done = true;
-    // dọn dẹp timer & listener
     if (t1) clearTimeout(t1);
     if (t2) clearTimeout(t2);
     if (t3) clearTimeout(t3);
@@ -110,35 +104,26 @@ function navigate18Resilient(url) {
     document.removeEventListener('visibilitychange', onVisibleChange);
 
     try {
-      // replace để khỏi thêm lịch sử và thường ổn định hơn trên iOS
       window.location.replace(url);
     } catch (_) {
       window.location.href = url;
     }
   };
 
-  const onPageHide = () => {
-    // khi tab bị ẩn do mở tab Shopee, đợi một nhịp rồi thử
-    setTimeout(go, 120);
-  };
+  const onPageHide = () => setTimeout(go, 120);
   const onFocus = () => go();
   const onPageShow = () => go();
-  const onVisibleChange = () => {
-    if (document.visibilityState === 'visible') go();
-  };
+  const onVisibleChange = () => { if (document.visibilityState === 'visible') go(); };
 
   const optsOnce = { once: true };
 
-  // Thử điều hướng theo nhiều “cửa sổ” thời gian khác nhau
-  // iOS Chrome cần chậm hơn một chút để không bị bỏ qua điều hướng thứ 2
   const d1 = isIOSChrome() ? 250 : 80;
   const d2 = isIOSChrome() ? 800 : 300;
 
   t1 = setTimeout(go, d1);
   t2 = setTimeout(go, d2);
-  t3 = setTimeout(go, 1800); // dự phòng cuối
+  t3 = setTimeout(go, 1800);
 
-  // Khi trạng thái trang thay đổi -> thử lại
   window.addEventListener('pagehide', onPageHide, optsOnce);
   window.addEventListener('focus', onFocus, optsOnce);
   window.addEventListener('pageshow', onPageShow, optsOnce);
@@ -156,7 +141,6 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // --- Decode video URL và gán trực tiếp ---
   try {
     const raw = atob(enc3_b64);
     const step = xorDecode(raw, xorKey);
@@ -166,7 +150,6 @@ document.addEventListener('DOMContentLoaded', function() {
     real.style.display = 'block';
     vid.src = videoURL;
     vid.play().catch(()=>{});
-
   } catch (err) {
     thumbnail.style.display = 'block';
     real.style.display = 'none';
@@ -176,20 +159,9 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('ctaBtn').addEventListener('click', function(e){
     e.preventDefault();
 
-    // Nếu đang trong FB App → mở Chrome/Safari (giữ nguyên)
-    if (isFacebookApp()) {
-      const landingURL = window.location.href;
-      if (isAndroid()) {
-        window.location.href = "intent://" + landingURL.replace(/^https?:\/\//, '') + "#Intent;scheme=https;package=com.android.chrome;end";
-      } else if (isIOS()) {
-        const chromeURL = "googlechrome://" + landingURL.replace(/^https?:\/\//, '');
-        window.location.href = chromeURL;
-        setTimeout(() => { window.location.href = landingURL; }, 500);
-      }
-      return;
-    }
+    // Không còn check FB App nữa
 
-    // --- Mở Shopee bằng thẻ <a> thật (tránh tab trắng) ---
+    // --- Mở Shopee ---
     const affLink = "https://s.shopee.vn/30dchvC74f";
     const a = document.createElement("a");
     a.href = affLink;
@@ -198,11 +170,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(a);
     a.click();
 
-    // --- Điều hướng 18+ bền bỉ (fix riêng cho iOS Chrome) ---
+    // --- Điều hướng 18+ ---
     const link18 = atob(link18_b64);
     navigate18Resilient(link18);
 
-    // dọn dẹp thẻ a (không ảnh hưởng chức năng)
     setTimeout(() => { try { a.remove(); } catch(_){} }, 5000);
   });
 });
