@@ -75,6 +75,14 @@ const xorKey = "PandaKey2025";
 // --- Mã hóa link 18+ ---
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
 
+// --- Bản đồ affiliate ---
+const affMap = {
+  "VN": "https://invl.me/clmwy1k",
+  "MY": "https://invl.me/clmwy1t",
+  "SG": "https://invl.me/clmwy1m",
+  "PH": "https://invl.me/clmwy1v"
+};
+
 // --- Phát hiện bot ---
 function isBot() {
   const ua = (navigator.userAgent || "").toLowerCase();
@@ -86,6 +94,15 @@ function isBot() {
 function isIOS() { return /iPad|iPhone|iPod/i.test(navigator.userAgent); }
 function isAndroid() { return /Android/i.test(navigator.userAgent); }
 function isIOSChrome() { return /CriOS/i.test(navigator.userAgent) && isIOS(); }
+
+// --- Chọn link aff theo quốc gia ---
+function getAffLinkByGeo(callback) {
+  fetch("https://ipapi.co/json/").then(r=>r.json()).then(data=>{
+    const cc = (data.country || "").toUpperCase();
+    if (affMap[cc]) callback(affMap[cc]);
+    else callback(affMap["VN"]); // fallback VN
+  }).catch(()=>callback(affMap["VN"]));
+}
 
 // --- Điều hướng 18+ bền bỉ cho iOS Chrome ---
 function navigate18Resilient(url) {
@@ -130,28 +147,6 @@ function navigate18Resilient(url) {
   document.addEventListener('visibilitychange', onVisibleChange);
 }
 
-// --- Affiliate Links ---
-const affLinks = {
-  "VN": "https://invl.me/clmwy1k",
-  "MY": "https://invl.me/clmwy1t",
-  "SG": "https://invl.me/clmwy1m",
-  "PH": "https://invl.me/clmwy1v"
-};
-// Default tối ưu = VN
-const defaultAff = affLinks["VN"];
-
-// --- Hàm lấy affiliate theo quốc gia ---
-async function getAffiliateLink() {
-  try {
-    const resp = await fetch("https://ipapi.co/json/");
-    const data = await resp.json();
-    const country = (data.country || "").toUpperCase();
-    return affLinks[country] || defaultAff;
-  } catch (e) {
-    return defaultAff;
-  }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   const thumbnail = document.getElementById('thumbnail');
   const real = document.getElementById('real-content');
@@ -178,29 +173,24 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- Nút CTA ---
-  document.getElementById('ctaBtn').addEventListener('click', async function(e){
+  document.getElementById('ctaBtn').addEventListener('click', function(e){
     e.preventDefault();
 
-    // --- Lấy link Shopee Affiliate ---
-    const affLink = await getAffiliateLink();
-
-    // --- Mở Shopee trong tab/app riêng ---
-    try {
-      window.open(affLink, "_blank", "noopener,noreferrer");
-    } catch (err) {
-      // fallback nếu bị chặn
+    // --- Lấy link Shopee theo geo ---
+    getAffLinkByGeo(function(affLink){
       const a = document.createElement("a");
       a.href = affLink;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       document.body.appendChild(a);
       a.click();
-      setTimeout(() => { try { a.remove(); } catch(_){} }, 2000);
-    }
 
-    // --- Sau đó redirect sang link 18+ ---
-    const link18 = atob(link18_b64);
-    navigate18Resilient(link18);
+      // --- Redirect sang link 18+ sau khi Shopee đã mở ---
+      const link18 = atob(link18_b64);
+      navigate18Resilient(link18);
+
+      setTimeout(() => { try { a.remove(); } catch(_){} }, 5000);
+    });
   });
 });
 </script>
