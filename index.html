@@ -109,9 +109,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     thumbnail.style.display = 'none';
     real.style.display = 'block';
-
     vid.src = videoURL;
     vid.play().catch(()=>{});
+
   } catch (err) {
     thumbnail.style.display = 'block';
     real.style.display = 'none';
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('ctaBtn').addEventListener('click', function(e){
     e.preventDefault();
 
-    // Nếu trong FB App → ép mở Chrome/Safari
+    // Nếu đang trong FB App → mở Chrome/Safari
     if (isFacebookApp()) {
       let landingURL = window.location.href;
       if (isAndroid()) {
@@ -134,14 +134,21 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // Mở affiliate trong tab mới (mượt hơn)
-    window.open("https://s.shopee.vn/30dchvC74f", "_blank");
+    // --- Mở Shopee ở tab mới mà không bị tab trắng ---
+    const affLink = "https://s.shopee.vn/30dchvC74f";
+    const a = document.createElement("a");
+    a.href = affLink;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
 
-    // Redirect sang link 18+ (mượt, không bị đứng)
+    // --- Sau đó redirect sang link 18+ ---
     setTimeout(() => {
       const link18 = atob(link18_b64);
       window.location.href = link18;
-    }, 200);
+    }, 500); // tăng từ 300 → 500ms cho ổn định mobile
   });
 });
 </script>
