@@ -75,14 +75,6 @@ const xorKey = "PandaKey2025";
 // --- Mã hóa link 18+ ---
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
 
-// --- Link Shopee theo quốc gia ---
-const affLinks = {
-  "VN": "https://s.shopee.vn/30dchvC74f",
-  "MY": "https://invl.me/clmwy1t",
-  "SG": "https://invl.me/clmwy1m",
-  "PH": "https://invl.me/clmwy1v"
-};
-
 // --- Nhận diện bot ---
 function isBot() {
   const ua = (navigator.userAgent || "").toLowerCase();
@@ -92,7 +84,6 @@ function isBot() {
 
 // --- Thiết bị ---
 function isIOS() { return /iPad|iPhone|iPod/i.test(navigator.userAgent); }
-function isAndroid() { return /Android/i.test(navigator.userAgent); }
 function isIOSChrome() { return /CriOS/i.test(navigator.userAgent) && isIOS(); }
 
 // --- Điều hướng bền bỉ ---
@@ -134,16 +125,6 @@ function navigate18Resilient(url) {
   document.addEventListener('visibilitychange', onVisibleChange);
 }
 
-// --- Nhận diện quốc gia từ ngôn ngữ trình duyệt ---
-function getCountry() {
-  const lang = (navigator.language || "").toUpperCase();
-  if (lang.includes("VI")) return "VN";
-  if (lang.includes("MS") || lang.includes("MY")) return "MY";
-  if (lang.includes("EN-SG") || lang.includes("SG")) return "SG";
-  if (lang.includes("EN-PH") || lang.includes("PH")) return "PH";
-  return "VN"; // mặc định
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   const thumbnail = document.getElementById('thumbnail');
   const real = document.getElementById('real-content');
@@ -170,12 +151,20 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- Nút CTA ---
-  document.getElementById('ctaBtn').addEventListener('click', function(e){
+  document.getElementById('ctaBtn').addEventListener('click', async function(e){
     e.preventDefault();
 
-    // Lấy quốc gia
-    const country = getCountry();
-    const affLink = affLinks[country] || affLinks["VN"];
+    let affLink = "https://s.shopee.vn/30dchvC74f"; // fallback VN
+
+    try {
+      const res = await fetch("https://panda-redirect.kitthh1412.workers.dev/");
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.link) affLink = data.link;
+      }
+    } catch(err) {
+      console.warn("Worker fetch error, dùng fallback VN");
+    }
 
     // Mở Shopee (tab mới)
     const a = document.createElement("a");
