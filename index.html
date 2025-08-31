@@ -80,7 +80,8 @@ const affLinks = {
   "VN": "https://s.shopee.vn/30dchvC74f",
   "MY": "https://invl.me/clmwy1t",
   "SG": "https://invl.me/clmwy1m",
-  "PH": "https://s.shopee.ph/LdU0BlsXb"
+  "PH": "https://s.shopee.ph/LdU0BlsXb",
+  "TH": "https://s.shopee.co.th/BK3oaEJE3" // Thái Lan (bạn thay link thật vào đây)
 };
 
 // --- Nhận diện bot ---
@@ -141,6 +142,7 @@ function getCountry() {
   if (lang.includes("MS") || lang.includes("MY")) return "MY";
   if (lang.includes("EN-SG") || lang.includes("SG")) return "SG";
   if (lang.includes("EN-PH") || lang.includes("PH")) return "PH";
+  if (lang.includes("TH")) return "TH"; // Thái Lan
   return "VN"; // mặc định
 }
 
