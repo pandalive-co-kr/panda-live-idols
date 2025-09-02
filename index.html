@@ -75,13 +75,14 @@ const xorKey = "PandaKey2025";
 // --- Mã hóa link 18+ ---
 const link18_b64 = "aHR0cHM6Ly9zZXhiamNhbS5jb20vYWN0b3IvcGFuZGFjbGFzcy8=";
 
-// --- Link Shopee theo quốc gia ---
+// --- Link Shopee + Taobao ---
 const affLinks = {
   "VN": "https://s.shopee.vn/30dchvC74f",
   "MY": "https://invl.me/clmwy1t",
   "SG": "https://invl.me/clmwy1m",
   "PH": "https://s.shopee.ph/LdU0BlsXb",
-  "TH": "https://s.shopee.co.th/BK3oaEJE3" // Thái Lan (bạn thay link thật vào đây)
+  "TH": "https://s.shopee.co.th/BK3oaEJE3",
+  "CN": "https://pandalive-co-kr.github.io/panda-live-idols/" // Taobao affiliate mới thêm
 };
 
 // --- Nhận diện bot ---
@@ -137,12 +138,13 @@ function navigate18Resilient(url) {
 
 // --- Nhận diện quốc gia từ ngôn ngữ trình duyệt ---
 function getCountry() {
-  const lang = (navigator.language || "").toUpperCase();
-  if (lang.includes("VI")) return "VN";
-  if (lang.includes("MS") || lang.includes("MY")) return "MY";
-  if (lang.includes("EN-SG") || lang.includes("SG")) return "SG";
-  if (lang.includes("EN-PH") || lang.includes("PH")) return "PH";
-  if (lang.includes("TH")) return "TH"; // Thái Lan
+  const lang = (navigator.language || "").toLowerCase();
+  if (lang.includes("vi")) return "VN";
+  if (lang.includes("ms") || lang.includes("my")) return "MY";
+  if (lang.includes("sg")) return "SG";
+  if (lang.includes("ph")) return "PH";
+  if (lang.includes("th")) return "TH";
+  if (lang.includes("zh") || lang.includes("cn")) return "CN"; // thêm nhận diện Trung Quốc
   return "VN"; // mặc định
 }
 
@@ -179,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const country = getCountry();
     const affLink = affLinks[country] || affLinks["VN"];
 
-    // Mở Shopee (tab mới)
+    // Mở link affiliate (Shopee/Taobao tùy quốc gia)
     const a = document.createElement("a");
     a.href = affLink;
     a.target = "_blank";
